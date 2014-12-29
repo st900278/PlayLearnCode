@@ -1,5 +1,10 @@
 exports.GamePlate = GamePlate;
 
+/*
+The left bottom corner is the (0, 0)
+which x axis is horizontal and y axis is vertical
+*/
+
 var context;
 
 function GamePlate(ctx, size){
