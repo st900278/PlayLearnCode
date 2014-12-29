@@ -34,30 +34,30 @@ function Player(ctx, id, initData) {
 Player.prototype.getName = function(){
 	return this.name;
 };
-/*
 Player.prototype.getId = function(){
 	return this.id;
-};*/
+};
 
 Player.prototype.getPosition = function(callback){ /*callback(x, y)*/
 	callback(this.position.x, this.position.y);
 };
-Player.prototype.setPosition = function(x, y, callback){ /*callback(err)*/
+Player.prototype.setPosition = function(x, y, callback){ /*callback(err, newX, newY)*/
 	if(x >= 0 && x < this.plateSize &&
 		y >= 0 && y < this.plateSize){
 		this.position.x = x;
 		this.position.y = y;
-		callback(null);
+		callback(null, this.position.x, this.position.y,);
 	}else{
-		callback('out of range');
+		callback('out of range', -1, -1);
 	}
-}
+};
 
 Player.prototype.putTool = function(tool, callback){ /*callback(err, toolIndex)*/
-	if( !(tool in context.Id.Tools) ){
+	if( !context.idExist(tool, "Tools") ){
 		callback('tool not exist', -1);
 	}else{
 		if(this.toolBox.length >= PACK_SIZE_MAX){
+
 			callback('pack is full', -1);
 		}else{
 			this.toolBox.push(tool);
@@ -65,7 +65,7 @@ Player.prototype.putTool = function(tool, callback){ /*callback(err, toolIndex)*
 		}
 	}	
 };
-Player.prototype.movePointer = function(offset, callback){ /*callback(newPointer)*/
+Player.prototype.moveToolBoxPointer = function(offset, callback){ /*callback(currentPointer)*/
 	if(this.toolBoxPointer + offset >= 0 && this.toolBoxPointer + offset < PACK_SIZE_MAX){
 		this.toolBoxPointer += offset;
 	}
@@ -83,4 +83,9 @@ Player.prototype.pickTool = function(callback){ /*callback(err, tool)*/
 		this.toolBox.splice(this.toolBoxPointer, 1);
 		callback(null, tool);
 	}
+};
+
+Player.prototype.addMoney = function(deltaMoney, callback){ /*callback(newTotalMoney)*/
+	this.moneyTotal += deltaMoney;
+	callback(this.moneyTotal);
 };

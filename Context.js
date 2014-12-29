@@ -20,7 +20,25 @@ function Context(){
 			DOWN: (5 << 2),
 			LEFT: (5 << 3),
 			RIGHT: (5 << 4),
-			ARBI: (5 << 5), //Arbitrary, use mix bit mask to represent it
+			ARBI: (5 << 5), //Arbitrary, use mix bit mask to store the value
 		},
 	};
 }
+
+Context.prototype.idExist = funciton(value, obj/*namepsace name, string*/){ /*Whether id exist in the namespace*/
+	if( !(obj in this.Id) ) return false;
+	var found = false;
+
+	for(var member in this.Id[obj]){
+		if(obj == "Directions"){ //Special case of the arbitrary direction
+			if( (value | this.Id[obj][member]) === this.Id[obj][member]){
+				found = true;
+				break;
+			}
+		}else if(this.Id[obj][member] === value){
+			found = true;
+			break;
+		}
+	}
+	return found;
+};
