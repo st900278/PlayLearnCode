@@ -2,8 +2,10 @@ exports.Context = Context;
 
 function Context(){
 	this.Id = {
-		PLATE_EMPTY: (1 << 1),
-		PLATE_MONEY: (1 << 2),
+		Plate: {
+			EMPTY: (1 << 1),
+			MONEY: (1 << 2),
+		},
 		
 		Tools: {
 			SWAP_ORDER: (3 << 1),
@@ -21,4 +23,4 @@ function Context(){
 			ARBI: (5 << 5), //Arbitrary, use mix bit mask to represent it
 		},
 	};
-};
+}

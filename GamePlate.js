@@ -80,11 +80,11 @@ GamePlate.prototype.pickItem = function(rowIndex, colIndex, callback){ /*callbac
 		ret = {};
 
 	switch(item){
-		case context.Id.PLATE_EMPTY:
+		case context.Id.Plate.EMPTY:
 			ret = {type: 'empty', value: null};
 			break;
 
-		case context.Id.PLATE_MONEY:
+		case context.Id.Plate.MONEY:
 			ret = {type: 'money', value: null};
 			break;
 
@@ -93,7 +93,7 @@ GamePlate.prototype.pickItem = function(rowIndex, colIndex, callback){ /*callbac
 			break;
 	}
 
-	this.plate[rowIndex][colIndex] = context.Id.PLATE_EMPTY;
+	this.plate[rowIndex][colIndex] = context.Id.Plate.EMPTY;
 	callback(ret, rowIndex, colIndex, this.plate[rowIndex][colIndex]);
 };
 
@@ -134,7 +134,7 @@ function initPlate(size, plate){
 				if(array[0].name == 'empty'){
 					if(array[0].num <= 0) continue;
 
-					plate[h][w] = context.Id.PLATE_EMPTY;
+					plate[h][w] = context.Id.Plate.EMPTY;
 					array[0].num -= 1;
 				}else if(array[0].name == 'tool'){
 					if(array[0].num <= 0) continue;
@@ -145,7 +145,7 @@ function initPlate(size, plate){
 				}else{ //money
 					if(array[0].num <= 0) continue;
 
-					plate[h][w] = context.Id.PLATE_MONEY;
+					plate[h][w] = context.Id.Plate.MONEY;
 					array[0].num -= 1;
 				}
 				break;
