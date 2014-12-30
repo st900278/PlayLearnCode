@@ -23,6 +23,8 @@ function Context(){
 			ARBI: (5 << 5), //Arbitrary, use mix bit mask to store the value
 		},
 	};
+
+	this.COLOR_CODE_LENGTH = 6,
 }
 
 Context.prototype.idExist = function(value, obj/*namepsace name, string*/){ /*Whether id exist in the namespace*/

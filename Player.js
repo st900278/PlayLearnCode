@@ -17,6 +17,7 @@ function Player(ctx, id, initData) {
 
 	this.name = ('name' in initData)? initData.name : "";
 	this.id = id;
+	this.color = randomColor();
 
 	this.plateSize = ('plateSize' in initData)? initData.plateSize : 0;
 
@@ -31,12 +32,26 @@ function Player(ctx, id, initData) {
 	this.moneyTotal = 0;
 }
 
+function randomColor() {
+	var colorCode = '#';
+
+	for(var i = 0; i < context.COLOR_CODE_LENGTH; i++){
+		var num = Math.floor(16 * Math.random());
+		colorCode += num.toString(16);
+	}
+
+	return colorCode;
+}
+
 Player.prototype.getName = function(){
 	return this.name;
 };
 Player.prototype.getId = function(){
 	return this.id;
 };
+Player.prototype.getColor = function(){
+	return this.color;
+}
 
 Player.prototype.getPosition = function(callback){ /*callback(x, y)*/
 	callback(this.position.x, this.position.y);
