@@ -46,7 +46,7 @@ Player.prototype.setPosition = function(x, y, callback){ /*callback(err, newX, n
 		y >= 0 && y < this.plateSize){
 		this.position.x = x;
 		this.position.y = y;
-		callback(null, this.position.x, this.position.y,);
+		callback(null, this.position.x, this.position.y);
 	}else{
 		callback('out of range', -1, -1);
 	}

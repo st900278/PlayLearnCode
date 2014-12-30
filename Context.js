@@ -25,7 +25,7 @@ function Context(){
 	};
 }
 
-Context.prototype.idExist = funciton(value, obj/*namepsace name, string*/){ /*Whether id exist in the namespace*/
+Context.prototype.idExist = function(value, obj/*namepsace name, string*/){ /*Whether id exist in the namespace*/
 	if( !(obj in this.Id) ) return false;
 	var found = false;
 
