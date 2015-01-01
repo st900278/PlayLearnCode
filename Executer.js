@@ -1,9 +1,13 @@
 var SandBoxes = require('sandcastle').Pool;
 
 var prefixCode = 'exports.main = function(){
-					if( initGameSocket() !== true ) throw new Error(\'Init socket to game failed\'); 
+					if( initGameIPCSocket() !== true ) throw new Error(\'Init socket to game failed\'); 
+					/*User code start*/
+
 					',
-	suffixCode = ' };';
+	suffixCode = '
+					/*User code end*/
+					};';
 
 var Executer = function(timeOut, errCallbacks){
 	this.timeOutMs = timeOut;

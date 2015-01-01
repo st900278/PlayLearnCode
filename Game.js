@@ -1,6 +1,7 @@
 var GamePlate = require('./GamePlate').GamePlate,
 	Player = require('./Player').Player,
 	Context = require('./Context').Context,
+	Executer = require('./Executer').Executer,
 	md5 = require('MD5');
 
 exports.Game = Game;
@@ -36,13 +37,20 @@ function Game(app, port){
 
 	};
 
+	this.summitCount = 0;
+	this.codeStorage = {};
+	this.codeExecuter = new Executer(3 * 60 * 1000/*timeout: 3 minutes*/, {
+		exec: ,
+		timeout: ,
+	});
+
 	/*Init game part*/
 	this.plateSize = 10;
 	this.gamePlate = new GamePlate(context, this.plateSize);
 
-	initHttpRoute();
-	initBasicIORoute();
-
+	initHttpRoute.call(this);
+	initBasicIORoute.call(this);
+	initCodeSummit.call(this);
 
 }
 
@@ -98,8 +106,26 @@ var initCodeSummit = function(){
 	/*Response of code summit*/
 	this.app.io.route('code:summit', function(req){
 		var data = req.data;
-		if('id' in data){
-			
+		if('id' in data && 'codeText' in data){
+			if(data['id'] in this.players){
+				this.codeStorage[data['id']] = data['codeText'];
+				this.summitCount++;
+
+				if(this.summitCount >= this.players.length){ //Summit complete
+					executeCodes.call(this); //Execute players' code
+
+					this.summitCount = 0;
+				}
+			}
 		}
 	});
 };
+
+var executeCodes = function(){
+	var execOrder = this.players.order;
+
+	for(var i = 0; i < execOrder.length; i++){
+		var id = execOrder[i];
+
+	}
+}
