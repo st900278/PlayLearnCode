@@ -42,13 +42,15 @@ function Game(app, port){
 
 	initHttpRoute();
 	initBasicIORoute();
+
+
 }
 
 Game.prototype.start = function(){
 	this.app.listen(this.port);
 };
 
-function initHttpRoute(){
+var initHttpRoute = function(){
 	this.app.get('/', function(req, resp){
 		if(this.players.length < REQUIRE_PLAYER_NUM){
 			resp.sendFile('game.html'); //Page that will do socket.io connecting
@@ -56,9 +58,9 @@ function initHttpRoute(){
 			resp.send('<center><h1>Exceed People Limit</h1></center>');
 		}
 	});
-}
+};
 
-function initBasicIORoute(){
+var initBasicIORoute = function(){
 	this.app.io.route('connect', function(req){
 		req.io.emit('userInit:request', {
 			require: ['nickname'],
@@ -78,6 +80,7 @@ function initBasicIORoute(){
 				req.io.emit('userInit:id', {
 					name: player.getName(),
 					id: player.getId(),
+					color: player.getColor(),
 				});
 
 				var tmpPlayerList = [];
@@ -90,3 +93,13 @@ function initBasicIORoute(){
 	});
 
 }
+
+var initCodeSummit = function(){
+	/*Response of code summit*/
+	this.app.io.route('code:summit', function(req){
+		var data = req.data;
+		if('id' in data){
+			
+		}
+	});
+};
