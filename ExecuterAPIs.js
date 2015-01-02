@@ -6,7 +6,7 @@ var isConnected = false;
 var CONNECT_TIMEOUT = 3000;
 
 exports.api = {
-	initGameIPCSocket: function(){
+	initGameIPCSocket: function(id){
 		if(isConnected === true) return true;
 
 		socket = net.createConnection('./game_ipc.socket', function(){
@@ -25,6 +25,13 @@ exports.api = {
 		clearTimeout(timeoutObj);
 
 		return true;
+	},
+
+	destroyIPCSocket: function(){
+		if(isConnected === true){
+			socket.destroy();
+			isConnected = false;
+		}
 	},
 
 	/*Public APIs*/

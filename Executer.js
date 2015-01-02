@@ -1,13 +1,20 @@
 var SandBoxes = require('sandcastle').Pool;
 
-var prefixCode = 'exports.main = function(){
-					if( initGameIPCSocket() !== true ) throw new Error(\'Init socket to game failed\'); 
+var prefixCode1 = "exports.main = function(){
+					if( initGameIPCSocket(\'",
+	prefixCode2 = "\') !== true ) throw new Error(\'Init socket to game failed\'); 
+					
+					try{
 					/*User code start*/
-
-					',
-	suffixCode = '
+					",
+	suffixCode = "
 					/*User code end*/
-					};';
+					}catch(execErr){
+						throw execErr; //Re-throw
+					}finally{
+						destroyIPCSocket();
+					}
+				};";
 
 var Executer = function(timeOut, errCallbacks){
 	this.timeOutMs = timeOut;
@@ -21,8 +28,8 @@ var Executer = function(timeOut, errCallbacks){
 	this.timeoutErrorCallback = ('timeout' in errCallbacks)? errCallbacks['timeout'] : null;
 };
 
-Executer.prototype.execute = function(code /*string*/){
-	var script = this.sandBoxes.createScript(prefixCode + code + suffixCode);
+Executer.prototype.execute = function(id, code /*string*/){
+	var script = this.sandBoxes.createScript(prefixCode1 + id.toString() + prefixCode2 + code + suffixCode);
 
 	script.on('exit', function(err, output){
 		script.kill();

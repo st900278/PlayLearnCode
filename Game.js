@@ -2,6 +2,7 @@ var GamePlate = require('./GamePlate').GamePlate,
 	Player = require('./Player').Player,
 	Context = require('./Context').Context,
 	Executer = require('./Executer').Executer,
+	net = require('net'),
 	md5 = require('MD5');
 
 exports.Game = Game;
@@ -103,6 +104,9 @@ var initBasicIORoute = function(){
 }
 
 var initCodeSummit = function(){
+	/*Local socket of the execute engine*/
+	net.createServer
+
 	/*Response of code summit*/
 	this.app.io.route('code:summit', function(req){
 		var data = req.data;
