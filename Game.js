@@ -46,6 +46,7 @@ function Game(app, port){
 	/*Init game part*/
 	this.plateSize = 10;
 	this.gamePlate = new GamePlate(context, this.plateSize);
+	this.gameRound = 5;
 
 	initHttpRoute.call(this);
 	initBasicIORoute.call(this);
@@ -55,6 +56,9 @@ function Game(app, port){
 
 Game.prototype.start = function(){
 	this.app.listen(this.port);
+};
+Game.prototype.cleanGame = function(){
+	this.gameServerSocket.close();
 };
 
 var initHttpRoute = function(){
@@ -128,7 +132,6 @@ var initCodeSummit = function(){
 
 				if(thiz.summitCount >= thiz.players.length){ //Summit complete
 					executeCodes.call(thiz); //Execute players' code
-
 					thiz.summitCount = 0;
 				}
 			}
@@ -141,7 +144,15 @@ var executeCodes = function(){
 
 	for(var i = 0; i < execOrder.length; i++){
 		var id = execOrder[i];
-
 		this.codeExecuter.execute(this.players[id], this.codeStorage[id]);
+	}
+
+	this.gameRound--;
+	if(this.gameRound <= 0){ //End game
+		this.app.io.broadcast('game:end');
+
+		this.cleanGame();
+	}else{ //Next round
+		this.app.io.broadcast('game:nextStage');
 	}
 }
