@@ -25,6 +25,8 @@ function Context(){
 	};
 
 	this.COLOR_CODE_LENGTH = 6,
+
+	this.GAME_SOCKET_PATH = './game_ipc.socket',
 }
 
 Context.prototype.idExist = function(value, obj/*namepsace name, string*/){ /*Whether id exist in the namespace*/

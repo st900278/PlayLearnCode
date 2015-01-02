@@ -16,33 +16,30 @@ var prefixCode1 = "exports.main = function(){
 					}
 				};";
 
-var Executer = function(timeOut, errCallbacks){
+var Executer = function(timeOut){
 	this.timeOutMs = timeOut;
 
 	this.sandBoxes = new SandBoxes({numberOfInstances: 3}, {
 		api: './ExecuterAPIs.js',
 		timeout: this.timeOutMs,
 	});
-
-	this.execErrorCallback = ('exec' in errCallbacks)? errCallbacks['exec'] : null;
-	this.timeoutErrorCallback = ('timeout' in errCallbacks)? errCallbacks['timeout'] : null;
 };
 
-Executer.prototype.execute = function(id, code /*string*/){
-	var script = this.sandBoxes.createScript(prefixCode1 + id.toString() + prefixCode2 + code + suffixCode);
+Executer.prototype.execute = function(player, code /*string*/){
+	var script = this.sandBoxes.createScript(prefixCode1 + player.getId() + prefixCode2 + code + suffixCode);
 
 	script.on('exit', function(err, output){
 		script.kill();
 
 		if(err !== null && err !== undefined){
-			this.execErrorCallback(err);
+			player.getIOInstance().emit('exec:errExec', err);
 		}
 	});
 
 	script.on('timeout', function(){
 		script.kill();
 
-		this.timeoutErrorCallback();
+		player.getIOInstance().emit('exec:errTimeout');
 	});
 
 	script.run();

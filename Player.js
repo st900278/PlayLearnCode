@@ -19,6 +19,8 @@ function Player(ctx, id, initData) {
 	this.id = id;
 	this.color = randomColor();
 
+	this.ioInstance = ('io' in initData)? initData.io : null;
+
 	this.plateSize = ('plateSize' in initData)? initData.plateSize : 0;
 
 	this.position = {
@@ -51,7 +53,10 @@ Player.prototype.getId = function(){
 };
 Player.prototype.getColor = function(){
 	return this.color;
-}
+};
+Player.prototype.getIOInstance = function(){
+	return this.io;
+};
 
 Player.prototype.getPosition = function(callback){ /*callback(x, y)*/
 	callback(this.position.x, this.position.y);

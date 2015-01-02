@@ -40,10 +40,8 @@ function Game(app, port){
 
 	this.summitCount = 0;
 	this.codeStorage = {};
-	this.codeExecuter = new Executer(3 * 60 * 1000/*timeout: 3 minutes*/, {
-		exec: ,
-		timeout: ,
-	});
+	this.codeExecuter = new Executer(3 * 60 * 1000/*timeout: 3 minutes*/);
+	this.gameServerSocket = null;
 
 	/*Init game part*/
 	this.plateSize = 10;
@@ -60,8 +58,9 @@ Game.prototype.start = function(){
 };
 
 var initHttpRoute = function(){
+	var thiz = this;
 	this.app.get('/', function(req, resp){
-		if(this.players.length < REQUIRE_PLAYER_NUM){
+		if(thiz.players.length < REQUIRE_PLAYER_NUM){
 			resp.sendFile('game.html'); //Page that will do socket.io connecting
 		}else{
 			resp.send('<center><h1>Exceed People Limit</h1></center>');
@@ -70,6 +69,8 @@ var initHttpRoute = function(){
 };
 
 var initBasicIORoute = function(){
+	var thiz = this;
+
 	this.app.io.route('connect', function(req){
 		req.io.emit('userInit:request', {
 			require: ['nickname'],
@@ -77,14 +78,15 @@ var initBasicIORoute = function(){
 			if('nickname' in respData){
 				console.log('Get client ' + respData.nickname);
 
-				var player = new Player(context, md5(respData.nickname + ':' + this.players.length), {
+				var player = new Player(context, md5(respData.nickname + ':' + thiz.players.length), {
 					name: respData.nickname,
-					plateSize: this.plateSize,
+					io: req.io,
+					plateSize: thiz.plateSize,
 					x: 0,
 					y: 0,
 				});
 
-				this.players.add(player);
+				thiz.players.add(player);
 
 				req.io.emit('userInit:id', {
 					name: player.getName(),
@@ -93,10 +95,10 @@ var initBasicIORoute = function(){
 				});
 
 				var tmpPlayerList = [];
-				for(var i : this.players){
-					tmpPlayerList.push(this.players[i].getName());
+				for(var i : thiz.players){
+					tmpPlayerList.push(thiz.players[i].getName());
 				}
-				this.app.io.broadcast('playerList', tmpPlayerList); //Tell everyone the player list is updated
+				thiz.app.io.broadcast('playerList', tmpPlayerList); //Tell everyone the player list is updated
 			}
 		});
 	});
@@ -104,21 +106,30 @@ var initBasicIORoute = function(){
 }
 
 var initCodeSummit = function(){
+	var thiz = this;
+
 	/*Local socket of the execute engine*/
-	net.createServer
+	this.gameServerSocket = net.createServer(function(clientSocket){
+		clientSocket.on('data', function(data){
+			if('id' in data){
+				/*Handling message*/
+			}
+		});
+	});
+	this.gameServerSocket.listen(context.GAME_SOCKET_PATH);
 
 	/*Response of code summit*/
 	this.app.io.route('code:summit', function(req){
 		var data = req.data;
 		if('id' in data && 'codeText' in data){
-			if(data['id'] in this.players){
-				this.codeStorage[data['id']] = data['codeText'];
-				this.summitCount++;
+			if(data['id'] in thiz.players){
+				thiz.codeStorage[data['id']] = data['codeText'];
+				thiz.summitCount++;
 
-				if(this.summitCount >= this.players.length){ //Summit complete
-					executeCodes.call(this); //Execute players' code
+				if(thiz.summitCount >= thiz.players.length){ //Summit complete
+					executeCodes.call(thiz); //Execute players' code
 
-					this.summitCount = 0;
+					thiz.summitCount = 0;
 				}
 			}
 		}
@@ -131,5 +142,6 @@ var executeCodes = function(){
 	for(var i = 0; i < execOrder.length; i++){
 		var id = execOrder[i];
 
+		this.codeExecuter.execute(this.players[id], this.codeStorage[id]);
 	}
 }
