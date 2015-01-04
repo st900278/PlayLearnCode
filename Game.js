@@ -2,7 +2,7 @@ var GamePlate = require('./GamePlate').GamePlate,
 	Player = require('./Player').Player,
 	Context = require('./Context').Context,
 	Executer = require('./Executer').Executer,
-	net = require('net'),
+	ipc = require('node-ipc'),
 	md5 = require('MD5');
 
 exports.Game = Game;
@@ -99,7 +99,7 @@ var initBasicIORoute = function(){
 				});
 
 				var tmpPlayerList = [];
-				for(var i : thiz.players){
+				for(var i in thiz.players){
 					tmpPlayerList.push(thiz.players[i].getName());
 				}
 				thiz.app.io.broadcast('playerList', tmpPlayerList); //Tell everyone the player list is updated
@@ -113,14 +113,18 @@ var initCodeSummit = function(){
 	var thiz = this;
 
 	/*Local socket of the execute engine*/
-	this.gameServerSocket = net.createServer(function(clientSocket){
-		clientSocket.on('data', function(data){
-			if('id' in data){
-				/*Handling message*/
+	ipc.config.id = context.GAME_SOCKET_ID;
+	ipc.config.maxRetries = 0;
+	ipc.serve(function(){
+		console.log('IPC server created');
+		
+		ipc.server.on('msg:action', function(data, socket){
+			if('id' in data && 'message' in data){
+				/*Handle message*/
 			}
 		});
 	});
-	this.gameServerSocket.listen(context.GAME_SOCKET_PATH);
+	ipc.server.start();
 
 	/*Response of code summit*/
 	this.app.io.route('code:summit', function(req){

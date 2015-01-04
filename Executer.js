@@ -1,48 +1,60 @@
-var SandBoxes = require('sandcastle').Pool;
+var SandBox = require('sandcastle').SandCastle,
+	context = new (require('./Context').Context)();
 
-var prefixCode1 = "exports.main = function(){
-					if( initGameIPCSocket(\'",
-	prefixCode2 = "\') !== true ) throw new Error(\'Init socket to game failed\'); 
-					
-					try{
-					/*User code start*/
-					",
-	suffixCode = "
-					/*User code end*/
-					}catch(execErr){
-						throw execErr; //Re-throw
-					}finally{
-						destroyIPCSocket();
-					}
-				};";
+var prefixCode1 = "exports.main = function(){ \
+					\nif( initGameIPCSocket(\'",
+	prefixCode2 = "\') !== true ){ throw new Error(\'Init socket to game failed\'); } \
+					\
+					\ntry{\
+					\n/*User code start*/ \
+					\n",
+	suffixCode = "	\
+					\n/*User code end*/ \
+					\n}catch(execErr){ \
+						\nthrow \'Code exception: \' + execErr.message; //Re-throw \
+					\n} \
+					\nexit(null); \
+				\n};";
 
 var Executer = function(timeOut){
 	this.timeOutMs = timeOut;
 
-	this.sandBoxes = new SandBoxes({numberOfInstances: 3}, {
+	this.sandBox = new SandBox({
 		api: './ExecuterAPIs.js',
+		useStrictMode: false,
 		timeout: this.timeOutMs,
 	});
 };
 
 Executer.prototype.execute = function(player, code /*string*/){
-	var script = this.sandBoxes.createScript(prefixCode1 + player.getId() + prefixCode2 + code + suffixCode);
+	var code = prefixCode1 + 
+				player.getId() + '\', \'' + context.GAME_SOCKET_ID +
+				prefixCode2 + code + suffixCode;
+	debugger;
+
+	var script = this.sandBox.createScript(code);
 
 	script.on('exit', function(err, output){
-		script.kill();
+		console.log('Exit');
 
 		if(err !== null && err !== undefined){
-			player.getIOInstance().emit('exec:errExec', err);
+			console.log('Sandbox error: ' + err);
+			//player.getIOInstance().emit('exec:errExec', err);
+		}else{
+			//player.getIOInstance().emit('exec:exit');
 		}
 	});
 
 	script.on('timeout', function(){
-		script.kill();
-
-		player.getIOInstance().emit('exec:errTimeout');
+		//player.getIOInstance().emit('exec:errTimeout');
+		console.log('Timeout');
 	});
 
 	script.run();
 };
+
+Executer.prototype.finish = function(){
+	this.sandBox.kill();
+}
 
 exports.Executer = Executer;

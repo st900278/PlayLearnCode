@@ -24,9 +24,9 @@ function Context(){
 		},
 	};
 
-	this.COLOR_CODE_LENGTH = 6,
+	this.COLOR_CODE_LENGTH = 6;
 
-	this.GAME_SOCKET_PATH = './game_ipc.socket',
+	this.GAME_SOCKET_ID = 'conopoly_ipc_server';
 }
 
 Context.prototype.idExist = function(value, obj/*namepsace name, string*/){ /*Whether id exist in the namespace*/
