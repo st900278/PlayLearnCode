@@ -16,8 +16,9 @@ var prefixCode1 = "exports.main = function(){ \
 					\nexit(null); \
 				\n};";
 
-var Executer = function(timeOut){
+var Executer = function(roomId, timeOut){
 	this.timeOutMs = timeOut;
+    this.roomId = roomId;
 
 	this.sandBox = new SandBox({
 		api: './ExecuterAPIs.js',
@@ -28,7 +29,7 @@ var Executer = function(timeOut){
 
 Executer.prototype.execute = function(player, code /*string*/){
 	var code = prefixCode1 + 
-				player.getId() + '\', \'' + context.GAME_SOCKET_ID +
+				player.getId() + '\', \'' + this.roomId +
 				prefixCode2 + code + suffixCode;
 	debugger;
 

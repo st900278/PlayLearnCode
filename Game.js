@@ -20,12 +20,13 @@ function Game(app, roomName){
 
 	this.summitCount = 0;
 	this.codeStorage = {};
-	this.codeExecuter = new Executer(20 * 1000/*timeout: 20 seconds*/);
+	this.codeExecuter = new Executer(this.id, 20 * 1000/*timeout: 20 seconds*/);
 
 	/*Init game part*/
 	this.plateSize = 10;
 	this.gamePlate = new GamePlate(context, this.plateSize);
 
+    initCodeEngine.call(this);
 }
 
 Game.prototype.addPlayer = function(player){ //Add a new player into the room
@@ -58,14 +59,14 @@ var addIORoute = function(playerId){
     });
 }
 
-var initCodeSummit = function(){
-	var thiz = this;
-
+var initCodeEngine = function(){
+    var thiz = this;
+    
 	/*Local socket of the execute engine*/
-	ipc.config.id = context.GAME_SOCKET_ID;
-	ipc.config.maxRetries = 0;
+	ipc.config.id = thiz.getId();
+	ipc.config.maxRetries = 0; //Do not reconnect
 	ipc.serve(function(){
-		console.log('IPC server created');
+		console.log('Rooom ' + ipc.config.id + 'IPC server created');
 		
 		ipc.server.on('msg:action', function(data, socket){
 			if('id' in data && 'message' in data){
@@ -74,22 +75,6 @@ var initCodeSummit = function(){
 		});
 	});
 	ipc.server.start();
-
-	/*Response of code summit*/
-	this.app.io.route('code:summit', function(req){
-		var data = req.data;
-		if('id' in data && 'codeText' in data){
-			if(data['id'] in thiz.players){
-				thiz.codeStorage[data['id']] = data['codeText'];
-				thiz.summitCount++;
-
-				if(thiz.summitCount >= thiz.players.length){ //Summit complete
-					executeCodes.call(thiz); //Execute players' code
-					thiz.summitCount = 0;
-				}
-			}
-		}
-	});
 };
 
 var executeCodes = function(){
@@ -101,6 +86,6 @@ var executeCodes = function(){
 	}
 }
 
-var initMapUpdated = function(){
-
+var mapUpdatedCallback = function(req){
+    /*TODO*/
 }
