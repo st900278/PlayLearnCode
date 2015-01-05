@@ -10,33 +10,13 @@ exports.Game = Game;
 var context = new Context();
 var REQUIRE_PLAYER_NUM = 4;
 
-function Game(app, port){
+function Game(app, roomName){
 	this.app = app;
-	this.port = port;
-
-	this.players = {
-		length: 0,
-		order: [], //Playing order
-
-		add: function(player){
-			if(player.getId().length === 32){ //Make sure it is md5
-				this[player.getId()] = player;
-				this.order.push(player.getId()); //Default order
-				this.length++;
-			}
-		},
-
-		remove: function(id){
-			if(id.length === 32){
-				if(id in this){
-					this.order.splice(this.order.indexOf(id), 1);
-					delete this[id];
-					this.length--;
-				}
-			}
-		},
-
-	};
+    this.name = roomName;
+    
+    this.id = context.randomId(this.name);
+    
+	this.players = {};
 
 	this.summitCount = 0;
 	this.codeStorage = {};
@@ -46,65 +26,36 @@ function Game(app, port){
 	this.plateSize = 10;
 	this.gamePlate = new GamePlate(context, this.plateSize);
 
-	initHttpRoute.call(this);
-	initBasicIORoute.call(this);
-	initCodeSummit.call(this);
-
 }
-/*
-Game.prototype.start = function(){
-	this.app.listen(this.port);
+
+Game.prototype.addPlayer = function(player){ //Add a new player into the room
+    this.players[player.getId()] = player;
+    addIORoute.call(this, player.getId());
+};
+Game.prototype.getName = function(){
+    return this.name;
+};
+Game.prototype.getId = function(){
+    return this.id;
+};
+Game.prototype.getUsers = function(){
+    var tmp = [];
+    for(var p in this.players){
+        tmp.push({
+            id: this.players[p].getId(),
+            name: this.players[p].getName(),
+        });
+    }
+    
+    return tmp;
 };
 
-Game.prototype.cleanGame = function(){
-};
-*/
-var initHttpRoute = function(){
+var addIORoute = function(playerId){
 	var thiz = this;
-	this.app.get('/', function(req, resp){
-		if(thiz.players.length < REQUIRE_PLAYER_NUM){
-			resp.sendFile('game.html'); //Page that will do socket.io connecting
-		}else{
-			resp.send('<center><h1>Exceed People Limit</h1></center>');
-		}
-	});
-};
-
-var initBasicIORoute = function(){
-	var thiz = this;
-
-	this.app.io.route('connect', function(req){
-		this.app.io.route('login', function(req){
-			var respData = req.data;
-
-			if('userID' in respData){
-				console.log('Get client ' + respData.nickname);
-
-				var player = new Player(context, md5(respData.nickname + ':' + thiz.players.length), {
-					name: respData.userID
-					io: req.io,
-					plateSize: thiz.plateSize,
-					x: 0,
-					y: 0,
-				});
-
-				thiz.players.add(player);
-
-				req.io.emit('userInit:id', {
-					name: player.getName(),
-					id: player.getId(),
-					color: player.getColor(),
-				});
-
-				var tmpPlayerList = [];
-				for(var i in thiz.players){
-					tmpPlayerList.push(thiz.players[i].getName());
-				}
-				thiz.app.io.broadcast('playerList', tmpPlayerList); //Tell everyone the player list is updated
-			}
-		});
-	});
-
+	
+    this.app.io.route(playerId, {
+        /*TODO: Add function callbacks*/
+    });
 }
 
 var initCodeSummit = function(){

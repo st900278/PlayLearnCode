@@ -46,3 +46,6 @@ Context.prototype.idExist = function(value, obj/*namepsace name, string*/){ /*Wh
 	}
 	return found;
 };
+Context.prototype.randomId = function(name){
+	return md5(name + '@' + (new Date()).getTime() + Math.random() * 100);
+};
