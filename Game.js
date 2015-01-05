@@ -40,27 +40,25 @@ function Game(app, port){
 
 	this.summitCount = 0;
 	this.codeStorage = {};
-	this.codeExecuter = new Executer(3 * 60 * 1000/*timeout: 3 minutes*/);
-	this.gameServerSocket = null;
+	this.codeExecuter = new Executer(20 * 1000/*timeout: 20 seconds*/);
 
 	/*Init game part*/
 	this.plateSize = 10;
 	this.gamePlate = new GamePlate(context, this.plateSize);
-	this.gameRound = 5;
 
 	initHttpRoute.call(this);
 	initBasicIORoute.call(this);
 	initCodeSummit.call(this);
 
 }
-
+/*
 Game.prototype.start = function(){
 	this.app.listen(this.port);
 };
-Game.prototype.cleanGame = function(){
-	this.gameServerSocket.close();
-};
 
+Game.prototype.cleanGame = function(){
+};
+*/
 var initHttpRoute = function(){
 	var thiz = this;
 	this.app.get('/', function(req, resp){
@@ -76,14 +74,14 @@ var initBasicIORoute = function(){
 	var thiz = this;
 
 	this.app.io.route('connect', function(req){
-		req.io.emit('userInit:request', {
-			require: ['nickname'],
-		}, function(err, respData){ /*Note: client must use the callback to return the user data*/
-			if('nickname' in respData){
+		this.app.io.route('login', function(req){
+			var respData = req.data;
+
+			if('userID' in respData){
 				console.log('Get client ' + respData.nickname);
 
 				var player = new Player(context, md5(respData.nickname + ':' + thiz.players.length), {
-					name: respData.nickname,
+					name: respData.userID
 					io: req.io,
 					plateSize: thiz.plateSize,
 					x: 0,
@@ -150,13 +148,8 @@ var executeCodes = function(){
 		var id = execOrder[i];
 		this.codeExecuter.execute(this.players[id], this.codeStorage[id]);
 	}
+}
 
-	this.gameRound--;
-	if(this.gameRound <= 0){ //End game
-		this.app.io.broadcast('game:end');
+var initMapUpdated = function(){
 
-		this.cleanGame();
-	}else{ //Next round
-		this.app.io.broadcast('game:nextStage');
-	}
 }

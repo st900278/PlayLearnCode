@@ -17,6 +17,7 @@ function Player(ctx, id, initData) {
 
 	this.name = ('name' in initData)? initData.name : "";
 	this.id = id;
+	this.room = null;
 	this.color = randomColor();
 
 	this.ioInstance = ('io' in initData)? initData.io : null;
@@ -34,7 +35,7 @@ function Player(ctx, id, initData) {
 	this.moneyTotal = 0;
 }
 
-function randomColor() {
+var randomColor = function() {
 	var colorCode = '#';
 
 	for(var i = 0; i < context.COLOR_CODE_LENGTH; i++){
@@ -43,13 +44,19 @@ function randomColor() {
 	}
 
 	return colorCode;
-}
+};
 
 Player.prototype.getName = function(){
 	return this.name;
 };
 Player.prototype.getId = function(){
 	return this.id;
+};
+Player.prototype.setRoom = function(roomInstance){
+	this.room = roomInstance;
+};
+Player.prototype.setPlateSize = function(size){
+	this.plateSize = size;
 };
 Player.prototype.getColor = function(){
 	return this.color;
