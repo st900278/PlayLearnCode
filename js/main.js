@@ -1,4 +1,4 @@
-var game = new Game();
+//var game = new Game();
 var roomInterval, userInterval;
 
 var loadPage = function (href) {
@@ -11,11 +11,12 @@ var loadPage = function (href) {
 
 document.querySelector("#login").addEventListener('click', function () {
     var id = document.getElementById("id");
-    game.socket.login(id);
+    //game.socket.login(id);
     document.querySelector("div.container").innerHTML = loadPage("../../room.html");
     document.querySelector("body").id = "room-body";
-    game.socket.getUserInfo();
+    /*game.socket.getUserInfo();
     roomInterval = setInterval(game.socket.getRoomList(), 1000);
-    userInterval = setInterval(game.socket.getPlayers(), 1000);
+    userInterval = setInterval(game.socket.getPlayers(), 1000);*/
 
 });
+

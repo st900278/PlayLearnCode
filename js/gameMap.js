@@ -3,6 +3,20 @@ var GameMap = function () {
     this.map['select'] = [];
     this.map['arrow'] = [];
     this.map['map'] = [];
+    this.arrow = {
+        down: "../src/png/down.png",
+        up: "../src/png/up.png",
+        left: "../src/png/left.png",
+        right: "../src/png/right.png",
+        leftUp: "../src/png/left-up.png",
+        rightUp: "../src/png/right-up.png",
+        leftDown: "../src/png/left-down.png",
+        rightUp: "../src/png/right-up.png"
+    }
+    
+    
+    
+    
     var ctx = document.getElementById('game-plain').getContext('2d');
     ctx.strokeStyle = "rgb(255,165,0)";
     for (var i = 2; i < 10; i++) {
@@ -37,7 +51,7 @@ var GameMap = function () {
         });
         ctx.strokeRect(40, i * 40, 40, 40);
         this.map['arrow'].push({
-            x: i * 40,
+            x: 40,
             y: i * 40
         });
         ctx.strokeRect(i * 40, 400, 40, 40);
@@ -66,6 +80,18 @@ var GameMap = function () {
     this.width = 40;
     this.ctx = ctx;
 };
+
+
+GameMap.prototype.randomArrow = function(){
+    var that = this;
+    var n = 0;
+    this.map['arrow'].forEach(function(element, index, array){
+        var keys = Object.keys(that.arrow);
+        that.placeImage(that.arrow[keys[ keys.length * Math.random() << 0]], element);
+    });
+};
+
+
 
 GameMap.prototype.drawMap = function () {
     var ctx = this.ctx;
@@ -98,8 +124,8 @@ GameMap.prototype.placeImage = function (url, location) {
     var ctx = this.ctx;
     var image = new Image();
     image.onload = function () {
-        var ptrn = ctx.createPattern(image, 'repeat');
-        ctx.drawImage(image, location.x, location.y, image.width, image.height, location.x, location.y, 40, 40);
+        var ptrn = ctx.createPattern(image, 'no-repeat');
+        ctx.drawImage(image, 0, 0, image.width, image.height, location.x, location.y, 40, 40);
     };
     image.src = url;
 };
