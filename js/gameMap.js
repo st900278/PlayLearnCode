@@ -94,10 +94,6 @@ GameMap.prototype.drawMap = function () {
 
 };
 
-GameMap.prototype.setCtx = function (ctx) {
-    this.ctx = ctx;
-}
-
 GameMap.prototype.placeImage = function (url, location) {
     var ctx = this.ctx;
     var image = new Image();
