@@ -16,7 +16,7 @@ http.listen(4455);
 var rooms = []; //Instances of Game
 
 var players = {}; //Map player id to player instance
-var playerInfos = [];
+var playersInfo = [];
 
 /*Http route rules*/
 //Index page
@@ -52,7 +52,7 @@ io.on('connection', function(clientSocket){
 			});
 
 			players[player.getId()] = player;
-			playerInfos.push({
+			playersInfo.push({
 				name: player.getName(),
 				color: player.getColor()
 			});
@@ -70,13 +70,13 @@ io.on('connection', function(clientSocket){
 				color: player.getColor()
 			});
 
-			io.emit('userList', playerInfos); //Broadcast to everyone
+			io.emit('userList', playersInfo); //Broadcast to everyone
 		}
 	});
 
 	clientSocket.on('userList', function(){
 		/*Ask for user list*/
-		clientSocket.emit('userList', playerInfos);
+		clientSocket.emit('userList', playersInfo);
 	});
 	clientSocket.on('roomList', function(){
 		/*Ask for room list*/

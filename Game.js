@@ -1,5 +1,5 @@
 var GamePlate = require('./GamePlate').GamePlate,
-	Player = require('./Player').Player,
+	//Player = require('./Player').Player,
 	Context = require('./Context').Context,
 	Executer = require('./Executer').Executer,
 	ipc = require('node-ipc'),
@@ -72,10 +72,18 @@ Game.prototype.getUsers = function(){
 };
 
 var addIORoute = function(playerIO){
-	//var thiz = this;
+	var thiz = this;
 
 	playerIO.on('codeSummit', function(data){
+		if('id' in data && 'codeText' in data && thiz.summitCount < thiz.playersOrder.length){
+			thiz.codeStorage[ data['id'] ] = data['codeText'];
+			thiz.summitCount++;
 
+			if(thiz.summitCount >= thiz.playersOrder.length){
+				//End summit, start running code
+				executeCodes.call(thiz);
+			}
+		}
 	});
 	playerIO.on('mapUpdate', function(data){ //Map changed
 
@@ -106,6 +114,7 @@ var timerStarter = function(){
 		gameEndCallback.call(this);
 	}else{
 		this.currentStage++;
+		this.summitCount = 0;
 		this.ioMain.to(this.id).emit('timerStart', {
 			stage: thiz.currentStage,
 			timeLimit: this.codingTimeMs
@@ -116,7 +125,11 @@ var timerStarter = function(){
 	}
 };
 var codeRunner = function(){
-	//var thiz = this;
+	var thiz = this;
+
+	this.ioMain.to(this.id).emit('timerStop', {
+		stage: thiz.currentStage
+	});
 };
 
 var initCodeEngine = function(){
@@ -138,7 +151,7 @@ var initCodeEngine = function(){
 };
 
 var executeCodes = function(){
-	var execOrder = this.players.order;
+	var execOrder = this.playersOrder;
 
 	for(var i = 0; i < execOrder.length; i++){
 		var id = execOrder[i];
