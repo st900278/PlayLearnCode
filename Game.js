@@ -8,29 +8,50 @@ var GamePlate = require('./GamePlate').GamePlate,
 exports.Game = Game;
 
 var context = new Context();
-var REQUIRE_PLAYER_NUM = 4;
 
-function Game(roomName){
+function Game(ioMain, roomName, initData){
     this.name = roomName;
-    
+    this.ioMain = ioMain;
     this.id = context.randomId(this.name);
+	if(typeof initData !== 'object') initData = {};
     
 	this.players = {};
+	this.playersOrder = [];
 
+	/*Init game part*/
+	this.requirePlayerNum = ('playerNumRequire' in initData)? initData['playerNumRequire'] : 4;
+	this.stageNum = ('stageNum' in initData)? initData['stageNum'] : 10;
+	this.currentStage = 0;
+	this.codingTimeMs = ('codingTimeMs' in initData)? initData['codingTimeMs'] : 30 * 1000;
 	this.summitCount = 0;
 	this.codeStorage = {};
 	this.codeExecuter = new Executer(this.id, 20 * 1000/*timeout: 20 seconds*/);
 
-	/*Init game part*/
-	this.plateSize = 10;
+	this.plateSize = ('plateSize' in initData)? initData['plateSize'] : 8;
 	this.gamePlate = new GamePlate(context, this.plateSize);
 
     initCodeEngine.call(this);
 }
 
 Game.prototype.addPlayer = function(player){ //Add a new player into the room
-    this.players[player.getId()] = player;
-    addIORoute.call(this, player.getId());
+    if(this.playersOrder.length >= this.requirePlayerNum){
+		player.ioInstance.emit('error:RoomFull');
+	}else{
+		this.players[player.getId()] = player;
+		player.ioInstance.join(this.id); //join to the socket.io room
+		this.playersOrder.push(player); //Default order
+
+
+		addIORoute.call(this, player.ioInstance);
+
+		if(this.playersOrder.length >= this.requirePlayerNum){ //Game start
+			this.ioMain.to(this.id).emit('gameStart'); //Broadcast to this room that game started
+
+			playersInit.call(this);
+
+			timerStarter.call(this);
+		}
+	}
 };
 Game.prototype.getName = function(){
     return this.name;
@@ -50,10 +71,53 @@ Game.prototype.getUsers = function(){
     return tmp;
 };
 
-var addIORoute = function(playerId){
+var addIORoute = function(playerIO){
+	//var thiz = this;
+
+	playerIO.on('codeSummit', function(data){
+
+	});
+	playerIO.on('mapUpdate', function(data){ //Map changed
+
+	});
+	playerIO.on('userUpdate', function(data){ //User data(Ex.Tool box) changed.
+
+	});
+	/*TODO: Add player specific io routes*/
+};
+
+var playersInit = function(){
 	var thiz = this;
-	/*TODO:*/
-}
+
+	/*Broadcast the map data*/
+	this.gamePlate.getGamePlate(function(plate, ring){
+		thiz.ioMain.to(thiz.id).emit('mapData', {
+			'plate': plate,
+			'ring': ring
+		});
+	});
+};
+
+var timerStarter = function(){
+	var thiz = this;
+
+	if(this.currentStage >= this.stageNum){
+		//Game over
+		gameEndCallback.call(this);
+	}else{
+		this.currentStage++;
+		this.ioMain.to(this.id).emit('timerStart', {
+			stage: thiz.currentStage,
+			timeLimit: this.codingTimeMs
+		});
+		setTimeout(function(){
+			codeRunner.call(thiz);
+		}, this.codingTimeMs);
+	}
+};
+var codeRunner = function(){
+	//var thiz = this;
+};
 
 var initCodeEngine = function(){
     var thiz = this;
@@ -62,9 +126,9 @@ var initCodeEngine = function(){
 	ipc.config.id = thiz.getId();
 	ipc.config.maxRetries = 0; //Do not reconnect
 	ipc.serve(function(){
-		console.log('Rooom ' + ipc.config.id + 'IPC server created');
+		console.log('Room ' + ipc.config.id + 'IPC server created');
 		
-		ipc.server.on('msg:action', function(data, socket){
+		ipc.server.on('msg:action', function(data/*, socket*/){
 			if('id' in data && 'message' in data){
 				/*Handle message*/
 			}
@@ -80,8 +144,8 @@ var executeCodes = function(){
 		var id = execOrder[i];
 		this.codeExecuter.execute(this.players[id], this.codeStorage[id]);
 	}
-}
+};
 
-var mapUpdatedCallback = function(req){
-    /*TODO*/
-}
+var gameEndCallback = function(){
+
+};

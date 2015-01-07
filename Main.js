@@ -35,11 +35,11 @@ app.get(/^\/(js|less|lib|src)\/(.+)/, function(req, resp){
 	resp.sendFile(__dirname + FRONT_PAGE_DIR + '/' + req.params[0] + '/' + req.params[1]);
 });
 
-/*IO route rules*/
 io.on('connection', function(clientSocket){
 	/*The client will connect the io in the login page*/
 	console.log('Get client connection');
 
+	/*Public IO route rules*/
 	clientSocket.on('login', function(data){
 		/*The start of the main initialization process*/
 		console.log('Get login event');
@@ -58,6 +58,11 @@ io.on('connection', function(clientSocket){
 			});
 			console.log('New player create, name: ' + player.getName());
 			console.log('Id: ' + player.getId());
+			clientSocket.on('getColor', function(){
+				clientSocket.emit({
+					color: player.getColor()
+				});
+			});
 
 			clientSocket.emit('loginAck', {
 				userName: player.getName(),
@@ -65,7 +70,7 @@ io.on('connection', function(clientSocket){
 				color: player.getColor()
 			});
 
-			//req.io.broadcast('userList', playerInfos); //Broadcast to everyone except the current handle user
+			io.emit('userList', playerInfos); //Broadcast to everyone
 		}
 	});
 
@@ -93,10 +98,16 @@ io.on('connection', function(clientSocket){
 
 	clientSocket.on('newRoom', function(data){
 		if('roomName' in data){
-			var room = new Game(data['roomName']);
+			var room = new Game(io, data['roomName'], {
+				//Init data
+				playerNumRequire: 4,
+				plateSize: 8,
+				stageNum: 5,
+				codingTimeMs: 60 * 1000 //One minute
+			});
 			rooms.push(room);
 
-			//app.io.broadcast('roomList', getRoomsInfo.call(this));
+			io.emit('roomList', getRoomsInfo());
 		}
 	});
 });

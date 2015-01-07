@@ -6,7 +6,7 @@ function Context(){
 	this.Id = {
 		Plate: {
 			EMPTY: (1 << 1),
-			MONEY: (1 << 2),
+			MONEY: (1 << 2)
 		},
 		
 		Tools: {
@@ -14,7 +14,7 @@ function Context(){
 			SWAP_POSITION: (3 << 2),
 			MOVE_LINE_HOR: (3 << 3),
 			MOVE_LINE_VER: (3 << 4),
-			DIRECT_RING_ROTATE: (3 << 5),
+			DIRECT_RING_ROTATE: (3 << 5)
 		},
 
 		Directions: {
@@ -22,8 +22,8 @@ function Context(){
 			DOWN: (5 << 2),
 			LEFT: (5 << 3),
 			RIGHT: (5 << 4),
-			ARBI: (5 << 5), //Arbitrary, use mix bit mask to store the value
-		},
+			ARBI: (5 << 5) //Arbitrary, use mix bit mask to store the value
+		}
 	};
 
 	this.COLOR_CODE_LENGTH = 6;
