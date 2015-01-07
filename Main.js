@@ -1,10 +1,17 @@
-var express = require('express.io')(),
+var express = require('express'),
+	Http = require('http'),
+	Io = require('socket.io'),
 	context = new (require('./Context').Context)(),
 	Game = require('./Game').Game,
-	Player = require('./Player').Player,
-	md5 = require('MD5');
+	Player = require('./Player').Player;
 
-var app = express.http().io();
+var FRONT_PAGE_DIR = '/html';
+
+var app = express();
+var http = Http.Server(app);
+var io = Io(http);
+
+http.listen(4455);
 
 var rooms = []; //Instances of Game
 
@@ -12,83 +19,96 @@ var players = {}; //Map player id to player instance
 var playerInfos = [];
 
 /*Http route rules*/
+//Index page
 app.get('/', function(req, resp){ //The login page
-	/*TODO: send the login page*/
+	resp.sendFile(__dirname + FRONT_PAGE_DIR + '/index.html');
 });
-app.get('/room.html', function(req, resp){
-	/*TODO: send the room list page*/
+//Other html pages in root dir
+app.get(/^\/(index|game|room)\.html/, function(req, resp){
+	//console.log(req.params);
+	resp.sendFile(__dirname + FRONT_PAGE_DIR + '/' + req.params[0] + '.html');
+});
+
+//CSS JS files and other*/
+app.get(/^\/(js|less|lib|src)\/(.+)/, function(req, resp){
+	//console.log(req.params);
+	resp.sendFile(__dirname + FRONT_PAGE_DIR + '/' + req.params[0] + '/' + req.params[1]);
 });
 
 /*IO route rules*/
-app.io.on('connect', function(req){
+io.on('connection', function(clientSocket){
 	/*The client will connect the io in the login page*/
-	console.log('Get client io connection @ ' + (new Data()).toString());
-});
-app.io.on('login', function(req){
-	/*The start of the main initialization process*/
-	var data = req.data;
-	if('userID' in data){
-		var userName = data['userID'];
-		var player = new Player(context, context.randomId(userName), {
-			io: req.io,
-			name: userName,
-			plateSize: 8,
-		});
+	console.log('Get client connection');
 
-		players[player.getId()] = player;
-		playerInfos.push({
-			name: player.getName(),
-			color: player.getColor(),
-		});
+	clientSocket.on('login', function(data){
+		/*The start of the main initialization process*/
+		console.log('Get login event');
+		if('userID' in data){
+			var userName = data['userID'];
+			var player = new Player(context, context.randomId(userName), {
+				io: clientSocket,
+				name: userName,
+				plateSize: 8
+			});
 
-		req.io.emit('loginAck', {
-			userName: player.getName(),
-			id: player.getId(),
-			color: player.getColor(),
-		});
+			players[player.getId()] = player;
+			playerInfos.push({
+				name: player.getName(),
+				color: player.getColor()
+			});
+			console.log('New player create, name: ' + player.getName());
+			console.log('Id: ' + player.getId());
 
-		req.io.broadcast('userList', playerInfos); //Broadcast to everyone except the current handle user
-	}
-});
-app.io.on('userList', function(req){
-	/*Ask for user list*/
-	req.io.emit('userList', playerInfos);
-});
-app.io.on('roomList', function(req){
-	req.io.emit('roomList', getRoomInfos.call(this));
-});
+			clientSocket.emit('loginAck', {
+				userName: player.getName(),
+				id: player.getId(),
+				color: player.getColor()
+			});
 
-app.io.on('newRoom', function(req){
-	var data = req.data;
-	if('roomName' in data){
-		var room = new Room(data['roomName']);
-		rooms.push(room);
+			//req.io.broadcast('userList', playerInfos); //Broadcast to everyone except the current handle user
+		}
+	});
 
-		app.io.broadcast('roomList', getRoomInfos.call(this));
-	}
+	clientSocket.on('userList', function(){
+		/*Ask for user list*/
+		clientSocket.emit('userList', playerInfos);
+	});
+	clientSocket.on('roomList', function(){
+		/*Ask for room list*/
+		clientSocket.emit('roomList', getRoomsInfo());
+	});
+
+	clientSocket.on('joinRoom', function(data){
+		if('id' in data && data['id'] in players &&
+			'roomId' in data){
+			var room;
+			for(var r in rooms){
+				room = rooms[r];
+				if(room.getId() === data['roomId']){
+					room.addPlayer(players[ data['id'] ]);
+				}
+			}
+		}
+	});
+
+	clientSocket.on('newRoom', function(data){
+		if('roomName' in data){
+			var room = new Game(data['roomName']);
+			rooms.push(room);
+
+			//app.io.broadcast('roomList', getRoomsInfo.call(this));
+		}
+	});
 });
-var getRoomInfos = function(){
-    var roomInfos = [];
+var getRoomsInfo = function(){
+    var roomsInfo = [];
 	for(var r in rooms){
-		roomInfos.push({
+		roomsInfo.push({
 			name: rooms[r].getName(),
             id: rooms[r].getId(),
-			userCount: rooms[r].getUsers().length,
+			userCount: rooms[r].getUsers().length
 		});
 	}
     
-    return roomInfos;
+    return roomsInfo;
 };
-app.io.on('joinRoom', function(req){
-    var data = req.data;
-    if('id' in data && data['id'] in players &&
-       'roomId' in data){
-        var room;
-        for(var r in rooms){
-            room = rooms[r];
-            if(room.getId() === data['roomId']){
-                room.addPlayer(players[ data['id'] ]);    
-            }
-        }
-    }
-});

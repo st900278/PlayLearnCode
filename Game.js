@@ -10,8 +10,7 @@ exports.Game = Game;
 var context = new Context();
 var REQUIRE_PLAYER_NUM = 4;
 
-function Game(app, roomName){
-	this.app = app;
+function Game(roomName){
     this.name = roomName;
     
     this.id = context.randomId(this.name);
@@ -44,7 +43,7 @@ Game.prototype.getUsers = function(){
     for(var p in this.players){
         tmp.push({
             id: this.players[p].getId(),
-            name: this.players[p].getName(),
+            name: this.players[p].getName()
         });
     }
     
@@ -53,10 +52,7 @@ Game.prototype.getUsers = function(){
 
 var addIORoute = function(playerId){
 	var thiz = this;
-	
-    this.app.io.route(playerId, {
-        /*TODO: Add function callbacks*/
-    });
+	/*TODO:*/
 }
 
 var initCodeEngine = function(){

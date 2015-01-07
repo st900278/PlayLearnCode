@@ -1,5 +1,7 @@
 exports.Context = Context;
 
+var md5 = require('MD5');
+
 function Context(){
 	this.Id = {
 		Plate: {
