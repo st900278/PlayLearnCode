@@ -26,7 +26,7 @@ function Player(ctx, id, initData) {
 
 	this.position = {
 		x: ('x' in initData)? initData.x : 0,
-		y: ('y' in initData)? initData.y : 0,
+		y: ('y' in initData)? initData.y : 0
 	};
 
 	this.toolBox = []; //The newest item has the biggest index
@@ -53,7 +53,10 @@ Player.prototype.getId = function(){
 	return this.id;
 };
 Player.prototype.setRoom = function(roomInstance){
-	this.room = roomInstance;
+	if(roomInstance instanceof Game) this.room = roomInstance;
+};
+Player.prototype.getRoom = function(){
+	return this.room;
 };
 Player.prototype.setPlateSize = function(size){
 	this.plateSize = size;

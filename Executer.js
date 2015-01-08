@@ -23,39 +23,49 @@ var Executer = function(roomId, timeOut){
 	this.sandBox = new SandBox({
 		api: './ExecuterAPIs.js',
 		useStrictMode: false,
-		timeout: this.timeOutMs,
+		timeout: this.timeOutMs
 	});
 };
 
 Executer.prototype.execute = function(player, code /*string*/){
-	var code = prefixCode1 + 
+	var thiz = this;
+
+	var execCode = prefixCode1 +
 				player.getId() + '\', \'' + this.roomId +
 				prefixCode2 + code + suffixCode;
-	debugger;
+	//debugger;
 
-	var script = this.sandBox.createScript(code);
+	var script = this.sandBox.createScript(execCode);
 
-	script.on('exit', function(err, output){
+	script.on('exit', function(err/*, output*/){
 		console.log('Exit');
 
 		if(err !== null && err !== undefined){
 			console.log('Sandbox error: ' + err);
-			//player.getIOInstance().emit('exec:errExec', err);
+			player.getRoom().broadcast('execution', {
+				msg: 'exec.err.Exec',
+				data: err
+			});
 		}else{
-			//player.getIOInstance().emit('exec:exit');
+			player.getRoom().broadcast('execution', {
+				msg: 'exec.exit'
+			});
 		}
 	});
 
 	script.on('timeout', function(){
-		//player.getIOInstance().emit('exec:errTimeout');
+		player.getRoom().broadcast('execution', {
+			msg: 'exec.err.Timeout',
+			data: thiz.timeOutMs
+		});
 		console.log('Timeout');
 	});
 
 	script.run();
 };
 
-Executer.prototype.finish = function(){
+Executer.prototype.stopExec = function(){
 	this.sandBox.kill();
-}
+};
 
 exports.Executer = Executer;

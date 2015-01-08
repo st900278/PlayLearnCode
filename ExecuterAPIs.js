@@ -51,30 +51,44 @@ exports.api = {
 
 	/*Movement part*/
 	MoveRight: function(){
-		ipc.of[serverId].emit('msg:action', {
+		ipc.of[serverId].emit('msg.action', {
 			id: ipc.config.id,
-			message: 'Move right'+ (new Date()).getTime(),
+			message: 'movement.Right'
 		});
 	},
 
 	MoveLeft: function(){
-		ipc.of[serverId].emit('msg:action', {
+		ipc.of[serverId].emit('msg.action', {
 			id: ipc.config.id,
-			message: 'Move left'+ (new Date()).getTime(),
+			message: 'movement.Left'
+		});
+	},
+
+	MoveUp: function(){
+		ipc.of[serverId].emit('msg.action', {
+			id: ipc.config.id,
+			message: 'movement.Up'
+		});
+	},
+
+	MoveDown: function(){
+		ipc.of[serverId].emit('msg.action', {
+			id: ipc.config.id,
+			message: 'movement.Down'
 		});
 	},
 
 	SetArrow: function(){
-		ipc.of[serverId].emit('msg:action', {
+		ipc.of[serverId].emit('msg.action', {
 			id: ipc.config.id,
-			message: 'Set arrow'+ (new Date()).getTime(),
+			message: 'step.SetArrow'
 		});
 	},
 
 	NextStep: function(){
-		ipc.of[serverId].emit('msg:action', {
+		ipc.of[serverId].emit('msg.action', {
 			id: ipc.config.id,
-			message: 'Next step'+ (new Date()).getTime(),
+			message: 'step.Next'
 		});
-	},
+	}
 };

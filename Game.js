@@ -70,6 +70,9 @@ Game.prototype.getUsers = function(){
     
     return tmp;
 };
+Game.prototype.broadcast = function(event, msgText){
+	this.ioMain.to(this.id).emit(event, msgText);
+};
 
 var addIORoute = function(playerIO){
 	var thiz = this;
@@ -100,7 +103,7 @@ var playersInit = function(){
 
 	/*Broadcast the map data*/
 	this.gamePlate.getGamePlate(function(plate, ring){
-		thiz.ioMain.to(thiz.id).emit('mapData', {
+		thiz.broadcast('mapData', {
 			'plate': plate,
 			'ring': ring
 		});
@@ -115,7 +118,7 @@ var timerStarter = function(){
 		gameEndCallback.call(this);
 	}else{
 		this.currentStage++;
-		this.ioMain.to(this.id).emit('timerStart', {
+		this.broadcast('timerStart', {
 			stage: thiz.currentStage,
 			timeLimit: this.codingTimeMs
 		});
@@ -127,7 +130,7 @@ var timerStarter = function(){
 var codeRunner = function(){
 	var thiz = this;
 
-	this.ioMain.to(this.id).emit('timerStop', {
+	this.broadcast('timerStop', {
 		stage: thiz.currentStage
 	});
 };
@@ -141,9 +144,59 @@ var initCodeEngine = function(){
 	ipc.serve(function(){
 		console.log('Room ' + ipc.config.id + 'IPC server created');
 		
-		ipc.server.on('msg:action', function(data/*, socket*/){
+		ipc.server.on('msg.action', function(data/*, socket*/){
 			if('id' in data && 'message' in data){
-				/*Handle message*/
+				var player;
+				if( (player = thiz.players[data['id']]) === undefined ) return;
+
+				thiz.broadcast('playerAction', 'action.' + data['message']);
+
+				var msgParts = data['message'].split('.');
+
+				try{
+					switch(msgParts[0]){
+						case 'movement':
+							switch(msgParts[1]){
+								case 'Right':
+									player.getPosition(function(ox, oy){
+										player.setPosition(ox + 1, oy, function(err){
+											if(err !== null){
+												throw 'move right failed';
+											}
+										});
+									});
+									break;
+
+								case 'Left':
+									player.getPosition(function(ox, oy){
+										player.setPosition(ox - 1, oy, function(err){
+											if(err !== null){
+												throw 'move left failed'
+											}
+										});
+									});
+									break;
+
+								case 'Down':
+									break;
+
+								case 'Up':
+									break;
+							}
+							break;
+
+						case 'step':
+							break;
+					}
+				}catch(execErr){
+					if(typeof execErr === 'string'){
+
+					}else{
+						console.log('Execution error: ' + execErr);
+					}
+
+					thiz.codeExecuter.stopExec();
+				}
 			}
 		});
 	});
