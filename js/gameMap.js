@@ -130,11 +130,11 @@ GameMap.prototype.placeImage = function (url, location) {
     image.src = url;
 };
 
-GameMap.prototype.setPlayerLocation = function (color, location) {
+GameMap.prototype.setPlayerLocation = function (player) {
     var ctx = this.ctx;
-    var x = location.x + this.width / 2;
-    var y = location.y + this.width / 2;
-    ctx.fillStyle = color;
+    var x = player.x * this.width + this.width / 2;
+    var y = player.y * this.width + this.width / 2;
+    ctx.fillStyle = player.color;
     ctx.beginPath();
     ctx.arc(x, y, this.width * 0.4, 0, 2 * Math.PI);
     ctx.fill();

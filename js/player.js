@@ -1,8 +1,9 @@
-var Player = function(){
+var Player = function(name, x, y, color){
+    this.name = name || "";
     this.money = 0;
-    this.x = 0;
-    this.y = 0;
-    this.color = "";
+    this.x = x || 0;
+    this.y = y || 0;
+    this.color = color|| "";
 };
 
 Player.prototype.setLocation = function(location){

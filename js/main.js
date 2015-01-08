@@ -14,9 +14,12 @@ document.querySelector("#login").addEventListener('click', function () {
     //game.socket.login(id);
     document.querySelector("div.container").innerHTML = loadPage("../../room.html");
     document.querySelector("body").id = "room-body";
-    /*game.socket.getUserInfo();
-    roomInterval = setInterval(game.socket.getRoomList(), 1000);
-    userInterval = setInterval(game.socket.getPlayers(), 1000);*/
+//    game.socket.getUserInfo();
+//    roomInterval = setInterval(function(){
+//        var room = game.socket.getRoomList();
+//        
+//    }, 1000);
+//    userInterval = setInterval(game.socket.getPlayers(), 1000);
 
 });
 

@@ -28,4 +28,10 @@ GameSocket.prototype.getUserInfo = function(){
     return userInfo;
 };
 
-//GameSocket.prototype.
+GameSocket.prototype.getNowUser = function(){
+    var user;
+    socket.on('user', function(data){
+        user = data;
+    });
+    return data;
+};
