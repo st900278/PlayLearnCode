@@ -26,6 +26,7 @@ function Game(ioMain, roomName, initData){
 	this.summitCount = 0;
 	this.codeStorage = {};
 	this.codeExecuter = new Executer(this.id, 20 * 1000/*timeout: 20 seconds*/);
+	this.executionBlocker = false;
 
 	this.plateSize = ('plateSize' in initData)? initData['plateSize'] : 8;
 	this.gamePlate = new GamePlate(context, this.plateSize);
@@ -145,6 +146,7 @@ var initCodeEngine = function(){
 		console.log('Room ' + ipc.config.id + 'IPC server created');
 		
 		ipc.server.on('msg.action', function(data/*, socket*/){
+			if(thiz.executionBlocker === true) return;
 			if('id' in data && 'message' in data){
 				var player;
 				if( (player = thiz.players[data['id']]) === undefined ) return;
@@ -156,44 +158,43 @@ var initCodeEngine = function(){
 				try{
 					switch(msgParts[0]){
 						case 'movement':
+							var offsetX = 0, offsetY = 0;
 							switch(msgParts[1]){
 								case 'Right':
-									player.getPosition(function(ox, oy){
-										player.setPosition(ox + 1, oy, function(err){
-											if(err !== null){
-												throw 'move right failed';
-											}
-										});
-									});
+									offsetX = 1;
 									break;
 
 								case 'Left':
-									player.getPosition(function(ox, oy){
-										player.setPosition(ox - 1, oy, function(err){
-											if(err !== null){
-												throw 'move left failed'
-											}
-										});
-									});
+									offsetX = -1;
 									break;
 
 								case 'Down':
+									offsetY = -1;
 									break;
 
 								case 'Up':
+									offsetY = 1;
 									break;
 							}
+							player.getPosition(function(ox, oy){
+								player.setPosition(ox + offsetX, oy + offsetY, function(err){
+									if(err !== null){
+										throw 'move to ' + (ox + offsetX) + ', ' + (oy + offsetY) + ' failed';
+									}
+								});
+							});
 							break;
 
 						case 'step':
 							break;
 					}
 				}catch(execErr){
-					if(typeof execErr === 'string'){
-
-					}else{
-						console.log('Execution error: ' + execErr);
-					}
+					thiz.executionBlocker = true; //Block the message receiving to ensure the game flow is correct
+					console.log('Game execution error: ' + execErr);
+					thiz.broadcast('execution', {
+						msg: 'exec.err.game',
+						data: execErr
+					});
 
 					thiz.codeExecuter.stopExec();
 				}
@@ -208,6 +209,7 @@ var executeCodes = function(){
 
 	for(var i = 0; i < execOrder.length; i++){
 		var id = execOrder[i];
+		this.executionBlocker = false;
 		this.codeExecuter.execute(this.players[id], this.codeStorage[id]);
 	}
 };
