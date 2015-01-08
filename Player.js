@@ -62,7 +62,7 @@ Player.prototype.getColor = function(){
 	return this.color;
 };
 Player.prototype.getIOInstance = function(){
-	return this.io;
+	return this.ioInstance;
 };
 
 Player.prototype.getPosition = function(callback){ /*callback(x, y)*/

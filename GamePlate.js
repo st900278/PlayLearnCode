@@ -21,12 +21,13 @@ function GamePlate(ctx, size){
 	//console.log(this.directRing);
 }
 
-
-GamePlate.prototype.debugPrint = function(){
+/*
+var debugPrint = function(){
 	for(var h = 0; h < this.plateSize; h++){
 		console.log(this.plate[h]);
 	}
-}
+};
+*/
 
 
 GamePlate.prototype.getGamePlate = function(callback){ /*callback(plate, ring)*/

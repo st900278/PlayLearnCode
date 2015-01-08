@@ -35,14 +35,14 @@ function Game(ioMain, roomName, initData){
 
 Game.prototype.addPlayer = function(player){ //Add a new player into the room
     if(this.playersOrder.length >= this.requirePlayerNum){
-		player.ioInstance.emit('error:RoomFull');
+		player.getIOInstance().emit('error:RoomFull');
 	}else{
 		this.players[player.getId()] = player;
-		player.ioInstance.join(this.id); //join to the socket.io room
+		player.getIOInstance().join(this.id); //join to the socket.io room
 		this.playersOrder.push(player); //Default order
+		player.setRoom(this);
 
-
-		addIORoute.call(this, player.ioInstance);
+		addIORoute.call(this, player.getIOInstance());
 
 		if(this.playersOrder.length >= this.requirePlayerNum){ //Game start
 			this.ioMain.to(this.id).emit('gameStart'); //Broadcast to this room that game started
@@ -82,6 +82,7 @@ var addIORoute = function(playerIO){
 			if(thiz.summitCount >= thiz.playersOrder.length){
 				//End summit, start running code
 				executeCodes.call(thiz);
+				thiz.summitCount = 0;
 			}
 		}
 	});
@@ -114,7 +115,6 @@ var timerStarter = function(){
 		gameEndCallback.call(this);
 	}else{
 		this.currentStage++;
-		this.summitCount = 0;
 		this.ioMain.to(this.id).emit('timerStart', {
 			stage: thiz.currentStage,
 			timeLimit: this.codingTimeMs
