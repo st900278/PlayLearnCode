@@ -108,7 +108,28 @@ exports.api = {
 			message: 'isToolBoxEmpty'
 		});
 
-		while(!asyncDone){}
+		while(!asyncDone){/*Wait until the result*/}
 		return isToolBoxEmpty;
+	},
+
+	MoveToolBoxLeft: function(){
+		ipc.of[serverId].emit('msg.tool', {
+			id: ipc.config.id,
+			message: 'pointer.Left'
+		});
+	},
+
+	MoveToolBoxRight: function(){
+		ipc.of[serverId].emit('msg.tool', {
+			id: ipc.config.id,
+			message: 'pointer.Right'
+		});
+	},
+
+	UseTool: function(){
+		ipc.of[serverId].emit('msg.tool', {
+			id: ipc.config.id,
+			message: 'useCurrent'
+		});
 	}
 };

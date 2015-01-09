@@ -10,7 +10,6 @@ var context;
 function GamePlate(ctx, size){
 	this.plateSize = size;
 	context = ctx;
-	//this.app = app;
 
 	this.plate = [];
 	for(var i = 0; i < this.plateSize; i++) this.plate[i] = [];

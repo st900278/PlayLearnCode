@@ -220,6 +220,32 @@ var initCodeEngine = function(){
 							'isToolBoxEmpty': result
 						});
 						break;
+
+					case 'pointer':
+						if( (player = thiz.players[data['id']]) !== undefined ){
+							switch(msgParts[1]){
+								case 'Left':
+									player.moveToolBoxPointer(-1, function(){});
+									break;
+
+								case 'Right':
+									player.moveToolBoxPointer(+1, function(){});
+									break;
+							}
+						}
+						break;
+
+					case 'useCurrent':
+						if( (player = thiz.players[data['id']]) !== undefined ){
+							player.pickTool(function(err, toolCurrent){
+								if(err !== null){
+									switch(toolCurrent){
+										/*TODO: Tool action*/
+									}
+								}
+							});
+						}
+						break;
 				}
 			}
 		});
