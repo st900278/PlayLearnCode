@@ -200,6 +200,29 @@ var initCodeEngine = function(){
 				}
 			}
 		});
+
+		ipc.server.on('msg.tool', function(data, socket){
+			if(thiz.executionBlocker === true) return;
+			if('id' in data && 'message' in data){
+				var player;
+				//if( (player = thiz.players[data['id']]) === undefined ) return;
+
+				var msgParts = data['message'].split('.');
+				switch(msgParts[0]){
+					case 'isToolBoxEmpty':
+						var result;
+						if( (player = thiz.players[data['id']]) !== undefined ){
+							result = player.isToolBoxEmpty();
+						}else{
+							result = null;
+						}
+						ipc.server.emit(socket, 'msgAck.tool', {
+							'isToolBoxEmpty': result
+						});
+						break;
+				}
+			}
+		});
 	});
 	ipc.server.start();
 };

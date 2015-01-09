@@ -102,6 +102,9 @@ Player.prototype.moveToolBoxPointer = function(offset, callback){ /*callback(cur
 
 	callback(this.toolBoxPointer);
 };
+Player.prototype.isToolBoxEmpty = function(){
+	return (this.toolBox.length <= 0);
+};
 Player.prototype.isToolEmpty = function(){
 	return !(this.toolBoxPointer >= this.toolBox.length || this.toolBoxPointer < 0);
 };

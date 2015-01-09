@@ -90,5 +90,25 @@ exports.api = {
 			id: ipc.config.id,
 			message: 'step.Next'
 		});
+	},
+
+	/*Tool part*/
+	IsToolBoxEmpty: function(){
+		var asyncDone = false,
+			isToolBoxEmpty = null;
+
+		ipc.of[serverId].on('msgAck.tool', function(data){
+			if('isToolBoxEmpty' in data){
+				isToolBoxEmpty = data['isToolBoxEmpty'];
+			}
+			asyncDone = true;
+		});
+		ipc.of[serverId].emit('msg.tool', {
+			id: ipc.config.id,
+			message: 'isToolBoxEmpty'
+		});
+
+		while(!asyncDone){}
+		return isToolBoxEmpty;
 	}
 };
