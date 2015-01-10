@@ -110,7 +110,7 @@ io.on('connection', function(clientSocket){
 			}
 
 			if(room !== undefined && room !== null){
-				player.getIOInstance.broadcast.to(context.IO_OUT_ROOM_ID).emit('roomModified', getRoomInfo(room));
+				player.getIOInstance().broadcast.to(context.IO_OUT_ROOM_ID).emit('roomModified', getRoomInfo(room));
 			}
 		}
 	};
@@ -130,7 +130,7 @@ io.on('connection', function(clientSocket){
 			console.log('New room ' + room.getName() + ', ' + room.getId() + ' created');
 
 			var clientId = findPlayerBySocket(clientSocket).getId();
-			clientSocket.broadcast.to(context.IO_OUT_ROOM_ID).emit(clientId, 'roomAdd', getRoomInfo(room));
+			clientSocket.broadcast.to(context.IO_OUT_ROOM_ID).emit('roomAdd', getRoomInfo(room));
 
 			joinRoomCallback({
 				id: clientId,

@@ -112,8 +112,8 @@ function shuffle(array) {
 }
 
 var initPlate = function(size, plate){
-	var moneyCount = Math.floor(size * size / 3),
-		toolsCount = Math.floor(size * size / 4),
+	var moneyCount = Math.floor(size * size / 4),
+		toolsCount = Math.floor(size * size / 12),
 		emptyCount = (size * size) - (moneyCount + toolsCount);
 
 	var array = [], toolArray = [], moneyArray = [];
