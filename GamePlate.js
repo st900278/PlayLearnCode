@@ -1,7 +1,7 @@
 exports.GamePlate = GamePlate;
 
 /*
-The left bottom corner is the (0, 0)
+The left top corner is the (0, 0)
 which x axis is horizontal and y axis is vertical
 */
 
@@ -29,8 +29,11 @@ var debugPrint = function(){
 */
 
 
-GamePlate.prototype.getGamePlate = function(callback){ /*callback(plate, ring)*/
-	callback(this.plate, this.directRing);
+GamePlate.prototype.getGamePlate = function(){
+	return ({
+		plate: this.plate,
+		ring: this.directRing
+	});
 };
 GamePlate.prototype.randomPlate = function(callback){ /*callback(newPlate)*/
 	initPlate();
@@ -55,7 +58,7 @@ GamePlate.prototype.shiftCol = function(colIndex, offset, callback){/*callback(n
 	var col = [],
 		indexNew = 0;
 	for(var i = 0; i < this.plateSize; i++){
-		indexNew = (i - offset) % this.plateSize;
+		indexNew = (i + offset) % this.plateSize;
 		if(indexNew < 0) indexNew += this.plateSize;
 		col[indexNew] = this.plate[i][colIndex];
 	}
@@ -96,19 +99,20 @@ GamePlate.prototype.pickItem = function(rowIndex, colIndex, callback){ /*callbac
 };
 
 function shuffle(array) {
-  var currentIndex = array.length, tmpValue, randomIndex ;
 
-  while (0 !== currentIndex) {
+	var currentIndex = array.length, tmpValue, randomIndex ;
 
-    randomIndex = Math.floor(Math.random() * currentIndex);
-    currentIndex -= 1;
+  	while (0 !== currentIndex) {
 
-    tmpValue = array[currentIndex];
-    array[currentIndex] = array[randomIndex];
-    array[randomIndex] = tmpValue;
-  }
+    	randomIndex = Math.floor(Math.random() * currentIndex);
+    	currentIndex -= 1;
 
-  return array;
+    	tmpValue = array[currentIndex];
+    	array[currentIndex] = array[randomIndex];
+    	array[randomIndex] = tmpValue;
+  	}
+
+  	return array;
 }
 
 var initPlate = function(size, plate){
@@ -116,9 +120,11 @@ var initPlate = function(size, plate){
 		toolsCount = Math.floor(size * size / 12),
 		emptyCount = (size * size) - (moneyCount + toolsCount);
 
-	var array = [], toolArray = [], moneyArray = [];
-	array[0] = {name: 'money', num: moneyCount};
-	array[1] = {name: 'tool', num: toolsCount};
+	var array = [], toolArray = [], moneyArray = [], i;
+	for(i =0; i < moneyCount; i++) array.push('money');
+	for(i =0; i < toolsCount; i++) array.push('tool');
+	for(i =0; i < emptyCount; i++) array.push('empty');
+	array = shuffle(array);
 	for(var tool in context.Id.Tools){
 		toolArray.push(context.Id.Tools[tool]);
 		//toolArray.push(tool);
@@ -126,38 +132,33 @@ var initPlate = function(size, plate){
 	for(var money in context.Id.Plate.Money){
 		moneyArray.push(context.Id.Plate.Money[money]);
 	}
-	array[2] = {name: 'empty', num: emptyCount};
 
+	var item;
 	for(var h = 0; h < size; h++){
 		for(var w = 0; w < size; w++){
-			while(true){
-				array = shuffle(array);
-				if(array[0].name == 'empty'){
-					if(array[0].num <= 0) continue;
-
+			//array = shuffle(array);
+			item = array.shift();
+			switch(item){
+				case 'empty':
 					plate[h][w] = context.Id.Plate.EMPTY;
-					array[0].num -= 1;
-				}else if(array[0].name == 'tool'){
-					if(array[0].num <= 0) continue;
+					break;
 
+				case 'tool':
 					toolArray = shuffle(toolArray);
 					plate[h][w] = toolArray[0];
-					array[0].num -= 1;
-				}else{ //money
-					if(array[0].num <= 0) continue;
+					break;
 
+				case 'money':
 					moneyArray = shuffle(moneyArray);
 					plate[h][w] = moneyArray[0];
-					array[0].num -= 1;
-				}
-				break;
+					break;
 			}
 		}
 	}
 };
 
 var initDirectRing = function(size, ring){
-	var ringLength = (size + 1) * 4;
+	var ringLength = size * 4;
 
 	var directArray = [];
 	for(var direct in context.Id.Directions){

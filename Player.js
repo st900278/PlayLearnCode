@@ -30,6 +30,8 @@ function Player(ctx, id, initData) {
 		y: ('y' in initData)? initData.y : 0
 	};
 
+	this.directRingPointer = 0;
+
 	this.toolBox = []; //The newest item has the biggest index
 	this.toolBoxPointer= 0;
 
@@ -58,8 +60,11 @@ Player.prototype.getIOInstance = function(){
 	return this.ioInstance;
 };
 
-Player.prototype.getPosition = function(callback){ /*callback(x, y)*/
-	callback(this.position.x, this.position.y);
+Player.prototype.getPosition = function(){
+	return ({
+		x: this.position.x,
+		y: this.position.y
+	});
 };
 Player.prototype.setPosition = function(x, y, callback){ /*callback(err, newX, newY)*/
 	if(x >= 0 && x < this.plateSize &&
@@ -70,6 +75,13 @@ Player.prototype.setPosition = function(x, y, callback){ /*callback(err, newX, n
 	}else{
 		callback('out of range', -1, -1);
 	}
+};
+
+Player.prototype.getDirectRingPointer = function(){
+	return this.directRingPointer;
+};
+Player.prototype.moveDirectRingPointer = function(offset){
+	this.directRingPointer += offset;
 };
 
 Player.prototype.putTool = function(tool, callback){ /*callback(err, toolIndex)*/

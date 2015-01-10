@@ -26,13 +26,15 @@ function Context(){
 			DOWN: "directDown",
 			LEFT: "directLeft",
 			RIGHT: "directRight",
-			UP_LEFT: "directUpLeft",
-			UP_RIGHT: "directUpRight",
-			DOWN_RIGHT: "directDownRight",
-			DOWN_LEFT: "directDownLeft"
+			UP_LEFT: "directLeftUp",
+			UP_RIGHT: "directRightUp",
+			DOWN_RIGHT: "directRightDown",
+			DOWN_LEFT: "directLeftDown"
 			//ARBI: (5 << 5) //Arbitrary, use mix bit mask to store the value
 		}
 	};
+
+	this.GAME_PLATE_SIZE_DEFAULT = 8;
 
 	this.IO_OUT_ROOM_ID = "outRoom";
 

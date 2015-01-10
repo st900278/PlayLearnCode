@@ -37,6 +37,8 @@ function Game(ioMain, roomName, initData){
 }
 
 Game.prototype.addPlayer = function(player){ //Add a new player into the room
+	var thiz = this;
+
     if(this.playersOrder.length >= this.requirePlayerNum){
 		player.getIOInstance().emit('error:RoomFull');
 	}else{
@@ -48,6 +50,17 @@ Game.prototype.addPlayer = function(player){ //Add a new player into the room
 		this.players[player.getId()] = player;
 		this.playersOrder.push(player); //Default order
 		player.setRoom(this);
+		player.setPlateSize(this.plateSize);
+
+		var gmPlate = this.gamePlate.getGamePlate(),
+			plate = gmPlate.plate,
+			ring = gmPlate.ring;
+
+		do{
+			var rx = Math.floor( Math.random() * this.plateSize),
+				ry = Math.floor( Math.random() * this.plateSize);
+		}while(plate[ry][rx] !== 'empty');
+		player.setPosition(rx, ry, function(){});
 
 		player.getIOInstance().broadcast.to(this.id).emit('playerAdd', {
 			id: player.getId(),
@@ -58,9 +71,28 @@ Game.prototype.addPlayer = function(player){ //Add a new player into the room
 		addIORoute.call(this, player.getIOInstance());
 
 		if(this.playersOrder.length >= this.requirePlayerNum){ //Game start
-			this.ioMain.to(this.id).emit('gameStart'); //Broadcast to this room that game started
 
-			playersInit.call(this);
+			var playerPositions = [], p;
+			for(var i = 0; i < this.playersOrder.length; i++){
+				p = this.playersOrder[i];
+				p.moveDirectRingPointer(Math.floor( Math.random() * this.plateSize * 4 ));
+				playerPositions.push({
+					id: p.getId(),
+					x: p.getPosition().x,
+					y: p.getPosition().y,
+
+					directRingPointer: p.getDirectRingPointer()
+				});
+			}
+
+			thiz.ioMain.to(thiz.id).emit('gameStart', {
+				plate: plate,
+				ring: ring,
+
+				playerPositions: playerPositions
+			}); //Broadcast to this room that game started
+
+			//playersInit.call(this);
 
 			timerStarter.call(this);
 		}
@@ -142,10 +174,10 @@ var addIORoute = function(playerIO){
 	});
 };
 
+/*
 var playersInit = function(){
 	var thiz = this;
 
-	/*Broadcast the map data*/
 	this.gamePlate.getGamePlate(function(plate, ring){
 		thiz.broadcast('mapData', {
 			'plate': plate,
@@ -153,6 +185,7 @@ var playersInit = function(){
 		});
 	});
 };
+*/
 
 var timerStarter = function(){
 	var thiz = this;
@@ -219,13 +252,15 @@ var initCodeEngine = function(){
 									offsetY = 1;
 									break;
 							}
-							player.getPosition(function(ox, oy){
+							/*
+							player.getPosition(function(_id, ox, oy){
 								player.setPosition(ox + offsetX, oy + offsetY, function(err){
 									if(err !== null){
 										throw 'move to ' + (ox + offsetX) + ', ' + (oy + offsetY) + ' failed';
 									}
 								});
 							});
+							*/
 							break;
 
 						case 'step':

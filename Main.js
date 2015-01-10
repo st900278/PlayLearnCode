@@ -47,8 +47,11 @@ io.on('connection', function(clientSocket){
 			var userName = data['userID'];
 			var player = new Player(context, context.randomId(userName), {
 				io: clientSocket,
-				name: userName,
-				plateSize: 8
+				name: userName
+				//plateSize: context.GAME_PLATE_SIZE_DEFAULT
+
+				//x: Math.floor(Math.random() * context.GAME_PLATE_SIZE_DEFAULT),
+				//y: Math.floor(Math.random() * context.GAME_PLATE_SIZE_DEFAULT)
 			});
 			clientSocket.join(context.IO_OUT_ROOM_ID);
 
@@ -122,7 +125,7 @@ io.on('connection', function(clientSocket){
 			var room = new Game(io, data['roomName'], {
 				//Init data
 				playerNumRequire: 2,
-				plateSize: 8,
+				plateSize: context.GAME_PLATE_SIZE_DEFAULT,
 				stageNum: 5,
 				codingTimeMs: 60 * 1000, //One minute
 
