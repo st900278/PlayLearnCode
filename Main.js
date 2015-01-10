@@ -70,11 +70,13 @@ io.on('connection', function(clientSocket){
 				players: playersInfo
 			});
 			playersInfo.push({
+				id: player.getId(),
 				name: player.getName(),
 				color: player.getColor()
 			});
 
-			io.emit('playerAdd', {
+			io.emit('userAdd', {
+				id: player.getId(),
 				name: player.getName(),
 				color: player.getColor()
 			});
@@ -123,17 +125,26 @@ io.on('connection', function(clientSocket){
 	});
 
 	clientSocket.on('disconnect', function(){
-		var removedName, removedColor;
+		var removedName, removedColor, removedId;
 
 		for(var p in players){
 			var player = players[p];
 
 			if(player.getIOInstance() === clientSocket){
 				removedName = player.getName();
+				removedId = player.getId();
 				removedColor = player.getColor();
+
+				if(player.getRoom() !== null && player.getRoom() !== undefined) player.getRoom().removePlayer(removedId);
+
 				delete players[p];
 				break;
 			}
+		}
+
+		if(removedName === undefined || removedId === undefined ||
+			removedName === null || removedId === null){
+			return;
 		}
 
 		for(var p in playersInfo){
@@ -142,6 +153,10 @@ io.on('connection', function(clientSocket){
 				break;
 			}
 		}
+
+		io.emit('userRemoved', {
+			id: removedId
+		});
 		console.log("Removed player: " + removedName);
 	});
 });
@@ -149,10 +164,16 @@ io.on('connection', function(clientSocket){
 var getRoomsInfo = function(){
     var roomsInfo = [];
 	for(var r in rooms){
+		var room = rooms[r];
+
 		roomsInfo.push({
-			name: rooms[r].getName(),
-            id: rooms[r].getId(),
-			userCount: rooms[r].getUsers().length
+			name: room.getName(),
+            id: room.getId(),
+			userCount: room.getUsers().length,
+			playerRequire: room.getPlayerRequired(),
+			gamePlateSize: room.getGamePlateSize(),
+			stageNum: room.getStageNum(),
+			gameType: 'DEFAULT'
 		});
 	}
     

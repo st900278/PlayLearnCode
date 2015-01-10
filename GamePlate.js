@@ -70,15 +70,6 @@ GamePlate.prototype.randomDirectRing = function(callback){
 	initDirectRing();
 	callback(this.directRing);
 };
-/*Set arbitrary type's direction*/
-GamePlate.prototype.setDirect = function(ringIndex, direct, callback){/*callback(err, newDirect)*/
-	if(this.directRing[ringIndex] & context.Id.Directions.ARBI === context.Id.Directions.ARBI ){//It's arbitrary
-		this.directRing[ringIndex] = context.Id.Directions.ARBI | direct;
-		callback(null, direct);
-	}else{
-		callback('Not arbitrary Type', null);
-	}
-};
 
 GamePlate.prototype.pickItem = function(rowIndex, colIndex, callback){ /*callback(pickedItem, rowIndex, colIndex, valueAfter)*/
 	var item = this.plate[rowIndex][colIndex],
@@ -120,7 +111,7 @@ function shuffle(array) {
   return array;
 }
 
-function initPlate(size, plate){
+var initPlate = function(size, plate){
 	var moneyCount = Math.floor(size * size / 3),
 		toolsCount = Math.floor(size * size / 4),
 		emptyCount = (size * size) - (moneyCount + toolsCount);
@@ -163,9 +154,9 @@ function initPlate(size, plate){
 			}
 		}
 	}
-}
+};
 
-function initDirectRing(size, ring){
+var initDirectRing = function(size, ring){
 	var ringLength = (size + 1) * 4;
 
 	var directArray = [];
@@ -177,4 +168,4 @@ function initDirectRing(size, ring){
 		directArray = shuffle(directArray);
 		ring[l] = directArray[Math.floor(directArray.length * Math.random())];
 	}
-}
+};

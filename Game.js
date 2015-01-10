@@ -54,6 +54,11 @@ Game.prototype.addPlayer = function(player){ //Add a new player into the room
 		}
 	}
 };
+Game.prototype.removePlayer = function(id){
+	if(this.players[id] !== undefined){
+		delete this.players[id];
+	}
+};
 Game.prototype.getName = function(){
     return this.name;
 };
@@ -71,6 +76,16 @@ Game.prototype.getUsers = function(){
     
     return tmp;
 };
+Game.prototype.getPlayerRequired = function(){
+	return this.requirePlayerNum;
+};
+Game.prototype.getGamePlateSize = function(){
+	return this.plateSize;
+};
+Game.prototype.getStageNum = function(){
+	return this.stageNum;
+};
+
 Game.prototype.broadcast = function(event, msgText){
 	this.ioMain.to(this.id).emit(event, msgText);
 };
@@ -90,13 +105,6 @@ var addIORoute = function(playerIO){
 			}
 		}
 	});
-	playerIO.on('mapUpdate', function(data){ //Map changed
-
-	});
-	playerIO.on('userUpdate', function(data){ //User data(Ex.Tool box) changed.
-
-	});
-	/*TODO: Add player specific io routes*/
 };
 
 var playersInit = function(){
