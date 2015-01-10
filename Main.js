@@ -52,10 +52,6 @@ io.on('connection', function(clientSocket){
 			});
 
 			players[player.getId()] = player;
-			playersInfo.push({
-				name: player.getName(),
-				color: player.getColor()
-			});
 			console.log('New player create, name: ' + player.getName());
 			console.log('Id: ' + player.getId());
 			clientSocket.on('getColor', function(){
@@ -64,23 +60,38 @@ io.on('connection', function(clientSocket){
 				});
 			});
 
-			clientSocket.emit('loginAck', {
+			clientSocket.emit('init', {
 				userName: player.getName(),
 				id: player.getId(),
+				color: player.getColor(),
+				loginTime: context.getCurrentFormatTime(),
+
+				rooms: getRoomsInfo(),
+				players: playersInfo
+			});
+			playersInfo.push({
+				name: player.getName(),
 				color: player.getColor()
 			});
 
-			io.emit('userList', playersInfo); //Broadcast to everyone
+			io.emit('playerAdd', {
+				name: player.getName(),
+				color: player.getColor()
+			});
 		}
 	});
 
 	clientSocket.on('userList', function(){
 		/*Ask for user list*/
-		clientSocket.emit('userList', playersInfo);
+		clientSocket.emit('userList', {
+			players: playersInfo
+		});
 	});
 	clientSocket.on('roomList', function(){
 		/*Ask for room list*/
-		clientSocket.emit('roomList', getRoomsInfo());
+		clientSocket.emit('roomList', {
+			rooms: getRoomsInfo()
+		});
 	});
 
 	clientSocket.on('joinRoom', function(data){
@@ -110,7 +121,31 @@ io.on('connection', function(clientSocket){
 			io.emit('roomList', getRoomsInfo());
 		}
 	});
+
+	clientSocket.on('disconnect', function(){
+		var removedName, removedColor;
+
+		for(var p in players){
+			var player = players[p];
+
+			if(player.getIOInstance() === clientSocket){
+				removedName = player.getName();
+				removedColor = player.getColor();
+				delete players[p];
+				break;
+			}
+		}
+
+		for(var p in playersInfo){
+			if(playersInfo[p].name === removedName && playersInfo[p].color === removedColor){
+				playersInfo.splice(p, 1);
+				break;
+			}
+		}
+		console.log("Removed player: " + removedName);
+	});
 });
+
 var getRoomsInfo = function(){
     var roomsInfo = [];
 	for(var r in rooms){

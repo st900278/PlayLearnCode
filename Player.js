@@ -83,17 +83,12 @@ Player.prototype.setPosition = function(x, y, callback){ /*callback(err, newX, n
 };
 
 Player.prototype.putTool = function(tool, callback){ /*callback(err, toolIndex)*/
-	if( !context.idExist(tool, "Tools") ){
-		callback('tool not exist', -1);
+	if(this.toolBox.length >= PACK_SIZE_MAX){
+		callback('pack is full', -1);
 	}else{
-		if(this.toolBox.length >= PACK_SIZE_MAX){
-
-			callback('pack is full', -1);
-		}else{
-			this.toolBox.push(tool);
-			callback(null, this.toolBox.length - 1);
-		}
-	}	
+		this.toolBox.push(tool);
+		callback(null, this.toolBox.length - 1);
+	}
 };
 Player.prototype.moveToolBoxPointer = function(offset, callback){ /*callback(currentPointer)*/
 	if(this.toolBoxPointer + offset >= 0 && this.toolBoxPointer + offset < PACK_SIZE_MAX){

@@ -78,7 +78,7 @@ GamePlate.prototype.setDirect = function(ringIndex, direct, callback){/*callback
 	}else{
 		callback('Not arbitrary Type', null);
 	}
-}
+};
 
 GamePlate.prototype.pickItem = function(rowIndex, colIndex, callback){ /*callback(pickedItem, rowIndex, colIndex, valueAfter)*/
 	var item = this.plate[rowIndex][colIndex],
@@ -89,8 +89,10 @@ GamePlate.prototype.pickItem = function(rowIndex, colIndex, callback){ /*callbac
 			ret = {type: 'empty', value: null};
 			break;
 
-		case context.Id.Plate.MONEY:
-			ret = {type: 'money', value: null};
+		case context.Id.Plate.Money.LEVEL1:
+		case context.Id.Plate.Money.LEVEL2:
+		case context.Id.Plate.Money.LEVEL3:
+			ret = {type: 'money', value: item};
 			break;
 
 		default: //Tools
@@ -123,12 +125,15 @@ function initPlate(size, plate){
 		toolsCount = Math.floor(size * size / 4),
 		emptyCount = (size * size) - (moneyCount + toolsCount);
 
-	var array = [], toolArray = [];
+	var array = [], toolArray = [], moneyArray = [];
 	array[0] = {name: 'money', num: moneyCount};
 	array[1] = {name: 'tool', num: toolsCount};
 	for(var tool in context.Id.Tools){
 		toolArray.push(context.Id.Tools[tool]);
 		//toolArray.push(tool);
+	}
+	for(var money in context.Id.Plate.Money){
+		moneyArray.push(context.Id.Plate.Money[money]);
 	}
 	array[2] = {name: 'empty', num: emptyCount};
 
@@ -150,7 +155,8 @@ function initPlate(size, plate){
 				}else{ //money
 					if(array[0].num <= 0) continue;
 
-					plate[h][w] = context.Id.Plate.MONEY;
+					moneyArray = shuffle(moneyArray);
+					plate[h][w] = moneyArray[0];
 					array[0].num -= 1;
 				}
 				break;
@@ -170,8 +176,5 @@ function initDirectRing(size, ring){
 	for(var l = 0; l < ringLength; l++){
 		directArray = shuffle(directArray);
 		ring[l] = directArray[Math.floor(directArray.length * Math.random())];
-		if(ring[l] === context.Id.Directions.ARBI){
-			ring[l] |= (l === 0)? context.Id.Directions.UP : ring[ l-1 ]; //Init arbitrary type into previous element, otherwise UP
-		}
 	}
 }
