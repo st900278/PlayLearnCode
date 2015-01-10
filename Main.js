@@ -35,6 +35,38 @@ app.get(/^\/(js|less|lib|src)\/(.+)/, function(req, resp){
 	resp.sendFile(__dirname + FRONT_PAGE_DIR + '/' + req.params[0] + '/' + req.params[1]);
 });
 
+var broadcast = function(exceptIds, event, data){
+	console.log('Broadcast, exceptIds: ' + exceptIds);
+	if(exceptIds !== null && exceptIds.length > 0){
+		var found = false;
+		for(var p in players){
+			for(var i = 0; i < exceptIds.length; i++){
+				if(exceptIds[i] === p){
+					found = true;
+					break;
+				}
+			}
+			if(found === true){
+				found = false;
+				continue;
+			}
+
+			console.log('Broadcast send to: ' + p);
+			players[p].getIOInstance().emit(event, data);
+		}
+	}else{
+		io.emit(event, data);
+	}
+};
+var broadcastOutside = function(exceptId, event, data){
+	var exceptIds = [];
+	if(exceptId !== null) exceptIds.push(exceptId);
+	for(var p in players){
+		if(players[p].getRoom() !== null) exceptIds.push(p);
+	}
+	broadcast(exceptIds, event, data);
+};
+
 io.on('connection', function(clientSocket){
 	/*The client will connect the io in the login page*/
 	console.log('Get client connection');
@@ -75,7 +107,7 @@ io.on('connection', function(clientSocket){
 				color: player.getColor()
 			});
 
-			io.emit('userAdd', {
+			broadcastOutside(player.getId(), 'userAdd', {
 				id: player.getId(),
 				name: player.getName(),
 				color: player.getColor()
@@ -96,7 +128,7 @@ io.on('connection', function(clientSocket){
 		});
 	});
 
-	clientSocket.on('joinRoom', function(data){
+	var joinRoomCallback = function(data){
 		if('id' in data && data['id'] in players &&
 			'roomId' in data){
 			var room;
@@ -104,10 +136,14 @@ io.on('connection', function(clientSocket){
 				room = rooms[r];
 				if(room.getId() === data['roomId']){
 					room.addPlayer(players[ data['id'] ]);
+					break;
 				}
 			}
+
+			if(room !== undefined && room !== null) broadcastOutside(null, 'roomModified', getRoomInfo(room));
 		}
-	});
+	};
+	clientSocket.on('joinRoom', joinRoomCallback);
 
 	clientSocket.on('newRoom', function(data){
 		if('roomName' in data){
@@ -120,26 +156,29 @@ io.on('connection', function(clientSocket){
 			});
 			rooms.push(room);
 
-			io.emit('roomList', getRoomsInfo());
+			console.log('New room ' + room.getName() + ', ' + room.getId() + ' created');
+
+			io.emit('roomAdd', getRoomInfo(room));
+
+			joinRoomCallback({
+				id: findPlayerBySocket(clientSocket).getId(),
+				roomId: room.getId()
+			});
 		}
 	});
 
 	clientSocket.on('disconnect', function(){
 		var removedName, removedColor, removedId;
 
-		for(var p in players){
-			var player = players[p];
+		var player;
+		if( (player = findPlayerBySocket(clientSocket)) !== null ){
+			removedName = player.getName();
+			removedId = player.getId();
+			removedColor = player.getColor();
 
-			if(player.getIOInstance() === clientSocket){
-				removedName = player.getName();
-				removedId = player.getId();
-				removedColor = player.getColor();
+			if(player.getRoom() !== null && player.getRoom() !== undefined) player.getRoom().removePlayer(removedId);
 
-				if(player.getRoom() !== null && player.getRoom() !== undefined) player.getRoom().removePlayer(removedId);
-
-				delete players[p];
-				break;
-			}
+			delete players[player.getId()];
 		}
 
 		if(removedName === undefined || removedId === undefined ||
@@ -161,21 +200,35 @@ io.on('connection', function(clientSocket){
 	});
 });
 
+var getRoomInfo = function(room){
+	return ({
+		name: room.getName(),
+		id: room.getId(),
+		userCount: room.getUsers().length,
+		playerRequire: room.getPlayerRequired(),
+		gamePlateSize: room.getGamePlateSize(),
+		stageNum: room.getStageNum(),
+		timeLimit: (room.getCodingTimeMs() / 1000 / 60),
+		gameType: 'DEFAULT'
+	});
+};
+
 var getRoomsInfo = function(){
     var roomsInfo = [];
 	for(var r in rooms){
 		var room = rooms[r];
 
-		roomsInfo.push({
-			name: room.getName(),
-            id: room.getId(),
-			userCount: room.getUsers().length,
-			playerRequire: room.getPlayerRequired(),
-			gamePlateSize: room.getGamePlateSize(),
-			stageNum: room.getStageNum(),
-			gameType: 'DEFAULT'
-		});
+		roomsInfo.push(getRoomInfo(room));
 	}
     
     return roomsInfo;
+};
+
+var findPlayerBySocket = function(socket){
+	var player;
+	for(var p in players){
+		player = players[p];
+		if(player.getIOInstance() === socket) return player
+	}
+	return null;
 };

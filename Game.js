@@ -56,6 +56,7 @@ Game.prototype.addPlayer = function(player){ //Add a new player into the room
 };
 Game.prototype.removePlayer = function(id){
 	if(this.players[id] !== undefined){
+		this.players[id].room = null;
 		delete this.players[id];
 	}
 };
@@ -84,6 +85,9 @@ Game.prototype.getGamePlateSize = function(){
 };
 Game.prototype.getStageNum = function(){
 	return this.stageNum;
+};
+Game.prototype.getCodingTimeMs = function(){
+	return this.codingTimeMs;
 };
 
 Game.prototype.broadcast = function(event, msgText){
@@ -151,7 +155,7 @@ var initCodeEngine = function(){
 	ipc.config.id = thiz.getId();
 	ipc.config.maxRetries = 0; //Do not reconnect
 	ipc.serve(function(){
-		console.log('Room ' + ipc.config.id + 'IPC server created');
+		console.log('Room ' + ipc.config.id + ' IPC server created');
 		
 		ipc.server.on('msg.action', function(data/*, socket*/){
 			if(thiz.executionBlocker === true) return;

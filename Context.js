@@ -25,7 +25,11 @@ function Context(){
 			UP: "directUp",
 			DOWN: "directDown",
 			LEFT: "directLeft",
-			RIGHT: "directRight"
+			RIGHT: "directRight",
+			UP_LEFT: "directUpLeft",
+			UP_RIGHT: "directUpRight",
+			DOWN_RIGHT: "directDownRight",
+			DOWN_LEFT: "directDownLeft"
 			//ARBI: (5 << 5) //Arbitrary, use mix bit mask to store the value
 		}
 	};

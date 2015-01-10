@@ -1,5 +1,6 @@
 exports.Player = Player;
 
+var Game = require('./Game').Game;
 var context;
 
 var PACK_SIZE_MAX = 5;
