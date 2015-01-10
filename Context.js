@@ -34,11 +34,27 @@ function Context(){
 		}
 	};
 
-	this.COLOR_CODE_LENGTH = 6;
-
 	this.IO_OUT_ROOM_ID = "outRoom";
 
 	this.GAME_SOCKET_ID = 'conopoly_ipc_server';
+
+	this.HOT_COLORS = [
+		'#49ff45',
+		'#df004c',
+		'#0266c8',
+		'#48b427',
+		'#ff8100',
+		'#00933b',
+		'#3f3f3f',
+		'#ff40a7',
+		'#46aeff',
+		'#7a85ec',
+		'#bda2a2'
+	];
+	this.colorSelectedMap = {};
+	for(var i = 0; i < this.HOT_COLORS.length; i++){
+		this.colorSelectedMap[ this.HOT_COLORS[i] ] = false;
+	}
 }
 
 /*
@@ -72,4 +88,32 @@ Context.prototype.getCurrentFormatTime =  function(){
 			+ date.getHours().toString() + ':'
 			+ date.getMinutes().toString() + ':'
 			+ date.getSeconds().toString() );
+};
+Context.prototype.getColor = function(){
+	var index = -1,
+		counter = 0;
+	do{
+		index = Math.floor(Math.random() * this.HOT_COLORS.length);
+		if(this.colorSelectedMap[ this.HOT_COLORS[index] ] === false){
+			this.colorSelectedMap[ this.HOT_COLORS[index] ] = true
+		}else{
+			index = -1;
+		}
+		counter++;
+	}while(index < 0 && counter < this.HOT_COLORS.length);
+
+	if(index < 0){ //The color is used up, clean and do it again
+		for(var i = 0; i < this.HOT_COLORS.length; i++){
+			this.colorSelectedMap[ this.HOT_COLORS[i] ] = false;
+		}
+		return this.getColor();
+	}else{
+		return this.HOT_COLORS[index];
+	}
+};
+Context.prototype.recycleColor = function(color){
+	if(color in this.colorSelectedMap){
+		this.colorSelectedMap[color] = false;
+		console.log('Color ' + color + ' recycled');
+	}
 };

@@ -1,5 +1,4 @@
-var SandBox = require('sandcastle').SandCastle,
-	context = new (require('./Context').Context)();
+var SandBox = require('sandcastle').SandCastle;
 
 var prefixCode1 = "exports.main = function(){ \
 					\nif( initGameIPCSocket(\'",
@@ -16,7 +15,10 @@ var prefixCode1 = "exports.main = function(){ \
 					\nexit(null); \
 				\n};";
 
-var Executer = function(roomId, timeOut){
+var context;
+
+var Executer = function(ctx, roomId, timeOut){
+	context = ctx;
 	this.timeOutMs = timeOut;
     this.roomId = roomId;
 

@@ -19,7 +19,7 @@ function Player(ctx, id, initData) {
 	this.name = ('name' in initData)? initData.name : "";
 	this.id = id;
 	this.room = null;
-	this.color = randomColor();
+	this.color = context.getColor();
 
 	this.ioInstance = ('io' in initData)? initData.io : null;
 
@@ -35,17 +35,6 @@ function Player(ctx, id, initData) {
 
 	this.moneyTotal = 0;
 }
-
-var randomColor = function() {
-	var colorCode = '#';
-
-	for(var i = 0; i < context.COLOR_CODE_LENGTH; i++){
-		var num = Math.floor(16 * Math.random());
-		colorCode += num.toString(16);
-	}
-
-	return colorCode;
-};
 
 Player.prototype.getName = function(){
 	return this.name;

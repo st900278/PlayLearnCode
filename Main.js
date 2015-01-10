@@ -121,7 +121,7 @@ io.on('connection', function(clientSocket){
 		if('roomName' in data){
 			var room = new Game(io, data['roomName'], {
 				//Init data
-				playerNumRequire: 4,
+				playerNumRequire: 2,
 				plateSize: 8,
 				stageNum: 5,
 				codingTimeMs: 60 * 1000 //One minute
@@ -168,6 +168,7 @@ io.on('connection', function(clientSocket){
 				break;
 			}
 		}
+		context.recycleColor(removedColor);
 
 		io.to(context.IO_OUT_ROOM_ID).emit('userRemoved', {
 			id: removedId

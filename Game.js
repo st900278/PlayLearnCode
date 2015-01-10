@@ -25,7 +25,7 @@ function Game(ioMain, roomName, initData){
 	this.codingTimeMs = ('codingTimeMs' in initData)? initData['codingTimeMs'] : 30 * 1000;
 	this.summitCount = 0;
 	this.codeStorage = {};
-	this.codeExecuter = new Executer(this.id, 20 * 1000/*timeout: 20 seconds*/);
+	this.codeExecuter = new Executer(context, this.id, 20 * 1000/*timeout: 20 seconds*/);
 	this.executionBlocker = false;
 
 	this.plateSize = ('plateSize' in initData)? initData['plateSize'] : 8;
@@ -43,6 +43,15 @@ Game.prototype.addPlayer = function(player){ //Add a new player into the room
 		player.getIOInstance().join(this.id); //join to the socket.io room
 		this.playersOrder.push(player); //Default order
 		player.setRoom(this);
+
+		player.getIOInstance().broadcast.to(this.id).emit('playerAdd', {
+			id: player.getId(),
+			name: player.getName(),
+			color: player.getColor()
+		});
+		player.getIOInstance().emit('playerList', {
+			players: this.getUsers()
+		});
 
 		addIORoute.call(this, player.getIOInstance());
 
@@ -72,11 +81,13 @@ Game.prototype.getId = function(){
     return this.id;
 };
 Game.prototype.getUsers = function(){
-    var tmp = [];
+    var tmp = [], player;
     for(var p in this.players){
+		player = this.players[p];
         tmp.push({
-            id: this.players[p].getId(),
-            name: this.players[p].getName()
+            id: player.getId(),
+            name: player.getName(),
+			color: player.getColor()
         });
     }
     
