@@ -36,6 +36,8 @@ function Context(){
 
 	this.COLOR_CODE_LENGTH = 6;
 
+	this.IO_OUT_ROOM_ID = "outRoom";
+
 	this.GAME_SOCKET_ID = 'conopoly_ipc_server';
 }
 

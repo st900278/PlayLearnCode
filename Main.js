@@ -35,38 +35,6 @@ app.get(/^\/(js|less|lib|src)\/(.+)/, function(req, resp){
 	resp.sendFile(__dirname + FRONT_PAGE_DIR + '/' + req.params[0] + '/' + req.params[1]);
 });
 
-var broadcast = function(exceptIds, event, data){
-	console.log('Broadcast, exceptIds: ' + exceptIds);
-	if(exceptIds !== null && exceptIds.length > 0){
-		var found = false;
-		for(var p in players){
-			for(var i = 0; i < exceptIds.length; i++){
-				if(exceptIds[i] === p){
-					found = true;
-					break;
-				}
-			}
-			if(found === true){
-				found = false;
-				continue;
-			}
-
-			console.log('Broadcast send to: ' + p);
-			players[p].getIOInstance().emit(event, data);
-		}
-	}else{
-		io.emit(event, data);
-	}
-};
-var broadcastOutside = function(exceptId, event, data){
-	var exceptIds = [];
-	if(exceptId !== null) exceptIds.push(exceptId);
-	for(var p in players){
-		if(players[p].getRoom() !== null) exceptIds.push(p);
-	}
-	broadcast(exceptIds, event, data);
-};
-
 io.on('connection', function(clientSocket){
 	/*The client will connect the io in the login page*/
 	console.log('Get client connection');
@@ -82,6 +50,7 @@ io.on('connection', function(clientSocket){
 				name: userName,
 				plateSize: 8
 			});
+			clientSocket.join(context.IO_OUT_ROOM_ID);
 
 			players[player.getId()] = player;
 			console.log('New player create, name: ' + player.getName());
@@ -107,7 +76,7 @@ io.on('connection', function(clientSocket){
 				color: player.getColor()
 			});
 
-			broadcastOutside(player.getId(), 'userAdd', {
+			clientSocket.broadcast.to(context.IO_OUT_ROOM_ID).emit('userAdd', {
 				id: player.getId(),
 				name: player.getName(),
 				color: player.getColor()
@@ -131,16 +100,18 @@ io.on('connection', function(clientSocket){
 	var joinRoomCallback = function(data){
 		if('id' in data && data['id'] in players &&
 			'roomId' in data){
-			var room;
+			var room, player = players[ data['id'] ];
 			for(var r in rooms){
 				room = rooms[r];
 				if(room.getId() === data['roomId']){
-					room.addPlayer(players[ data['id'] ]);
+					room.addPlayer(player);
 					break;
 				}
 			}
 
-			if(room !== undefined && room !== null) broadcastOutside(null, 'roomModified', getRoomInfo(room));
+			if(room !== undefined && room !== null){
+				player.getIOInstance.broadcast.to(context.IO_OUT_ROOM_ID).emit('roomModified', getRoomInfo(room));
+			}
 		}
 	};
 	clientSocket.on('joinRoom', joinRoomCallback);
@@ -158,10 +129,11 @@ io.on('connection', function(clientSocket){
 
 			console.log('New room ' + room.getName() + ', ' + room.getId() + ' created');
 
-			io.emit('roomAdd', getRoomInfo(room));
+			var clientId = findPlayerBySocket(clientSocket).getId();
+			clientSocket.broadcast.to(context.IO_OUT_ROOM_ID).emit(clientId, 'roomAdd', getRoomInfo(room));
 
 			joinRoomCallback({
-				id: findPlayerBySocket(clientSocket).getId(),
+				id: clientId,
 				roomId: room.getId()
 			});
 		}

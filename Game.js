@@ -39,6 +39,7 @@ Game.prototype.addPlayer = function(player){ //Add a new player into the room
 		player.getIOInstance().emit('error:RoomFull');
 	}else{
 		this.players[player.getId()] = player;
+		player.getIOInstance().leave(context.IO_OUT_ROOM_ID);
 		player.getIOInstance().join(this.id); //join to the socket.io room
 		this.playersOrder.push(player); //Default order
 		player.setRoom(this);
@@ -56,7 +57,11 @@ Game.prototype.addPlayer = function(player){ //Add a new player into the room
 };
 Game.prototype.removePlayer = function(id){
 	if(this.players[id] !== undefined){
-		this.players[id].room = null;
+		var player = this.players[id];
+
+		player.getIOInstance().leave(this.id);
+		player.getIOInstance().join(context.IO_OUT_ROOM_ID);
+		player.setRoom(null);
 		delete this.players[id];
 	}
 };

@@ -54,7 +54,7 @@ Player.prototype.getId = function(){
 	return this.id;
 };
 Player.prototype.setRoom = function(roomInstance){
-	if(roomInstance instanceof Game) this.room = roomInstance;
+	if(roomInstance instanceof Game || roomInstance === null) this.room = roomInstance;
 };
 Player.prototype.getRoom = function(){
 	return this.room;
