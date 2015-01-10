@@ -1,5 +1,6 @@
-var Player = function(name, x, y, color, arrow){
+var Player = function(name, id, x, y, color, arrow){
     this.name = name || "";
+    this.id = id || "";
     this.money = 0;
     this.x = x || 0;
     this.y = y || 0;

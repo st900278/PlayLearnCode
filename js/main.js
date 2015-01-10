@@ -31,8 +31,7 @@ var roomTemplate = '<div class="row">{{name}}</div>\
 
 var userTemplate = '<div class="user-name" id={{id}}>暱稱:{{name}}</div>';
 
-var playerTemplate = '<div class="row" data-target="{{order}}">\
-                <div class="player" style="background:{{color}}">\
+var playerTemplate = '<div class="player" style="background:{{color}}">\
                     <div>玩家: {{name}}</div>\
                     <div>\
                         目前錢幣: \
@@ -40,8 +39,7 @@ var playerTemplate = '<div class="row" data-target="{{order}}">\
                     </div>\
                     <div>目前順序: <span class="order">1</span>\
                     </div>\
-                </div>\
-            </div>';
+                </div>';
 
 var loadPage = function (href) {
     var xmlhttp = new XMLHttpRequest();
@@ -151,8 +149,8 @@ var inRoom = function () {
 
 
 var inGame = function () {
-    for(var i=0;i<nowRoom.length;i++){
-        if(nowRoom[i].id == self.roomId)self.room = nowRoom[i];
+    for (var i = 0; i < nowRoom.length; i++) {
+        if (nowRoom[i].id == self.roomId) self.room = nowRoom[i];
     }
     var nowStatus = [1];
     document.body.innerHTML = loadPage("../../game.html");
@@ -162,27 +160,55 @@ var inGame = function () {
     loadScript("./js/toolbox.js");
     loadScript("./js/gameRoom.js");
 
-    document.querySelector('.player-info').innerHTML = Mustache.render(playerTemplate, {name: self.name, color: self.color, order:1});
-    for(var i=1;i<self.room.playerRequire;i++){
-        document.querySelector('.player-info').innerHTML = document.querySelector('.player-info').innerHTML + Mustache.render(playerTemplate, {color: "#d3d3d3", order: i+1});
+    for (var i = 1; i <= self.room.playerRequire; i++) {
+        var playerTag = document.createElement("div");
+        playerTag.className = "row";
+        playerTag.setAttribute("data-target", i.toString());
+        document.querySelector(".player-info").appendChild(playerTag);
     }
-    var gameRoom = new GameRoom(self.room);
-    game.socket.addRoomUser(function(){
+    nowPlayer.push(self);
+    document.querySelector('div.row[data-target="1"]').innerHTML = Mustache.render(playerTemplate, self);
+    for (var i = 1; i < self.room.playerRequire; i++) {
+        document.querySelector('div.row[data-target="' + (i + 1) + '"]').innerHTML = Mustache.render(playerTemplate, {
+            color: "#d3d3d3",
+        });
+        nowStatus.push(0);
+    }
+    game.socket.getRoomUser(function (data) {
+        console.log(data);
+        if (data.players.length > 0) {
 
+            data.players.forEach(function (el, idx) {
+                nowPlayer.push(data);
+                for (var i = 0; i < nowStatus.length; i++) {
+                    if (nowStatus[i] == 0) {
+                        nowStatus[i] = 1;
+                        document.querySelector('div.row[data-target="' + (i + 1) + '"]').innerHTML = Mustache.render(playerTemplate, el);
+                    }
+                }
+            });
+        }
+    });
+    game.socket.addRoomUser(function (data) {
+        nowPlayer.push(data);
+        for (var i = 0; i < nowStatus.length; i++) {
+            if (nowStatus[i] == 0) {
+                nowStatus[i] = 1;
+                document.querySelector('div.row[data-target="' + (i + 1) + '"]').innerHTML = Mustache.render(playerTemplate, data);
+            }
+        }
     });
 
-
-
-
-
-
-
+    game.socket.gameStart(function (data) {
+        console.log(data);
+        var plate = data.plate;
+        var ring = data.ring;
+        var playerData = data.playerPositions;
+        var gameRoom = new GameRoom(self.room);
+        gameRoom.map.init(plate, ring);
+        
+        gameRoom.createPlayer(
+    })
 
 
 };
-
-
-
-
-
-

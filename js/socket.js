@@ -64,11 +64,21 @@ GameSocket.prototype.listenModifyRoom = function(callback){
 
 GameSocket.prototype.addRoomUser = function(callback){
     this.socket.on('playerAdd', function(data){
-        callback();
+        callback(data);
     });
 };
 
+GameSocket.prototype.getRoomUser = function(callback){
+    this.socket.on('playerList', function(data){
+        callback(data);
+    });
+};
 
+GameSocket.prototype.gameStart = function(callback){
+    this.socket.on('gameStart', function(data){
+        callback(data);
+    })
+};
 
 
 

@@ -1,22 +1,24 @@
 var GameMap = function () {
     this.map = new Object();
+    
+    
     this.map['select'] = [];
     this.map['arrow'] = [];
     this.map['map'] = [];
     this.arrow = {
-        down: "../src/png/down.png",
-        up: "../src/png/up.png",
-        left: "../src/png/left.png",
-        right: "../src/png/right.png",
-        leftUp: "../src/png/left-up.png",
-        rightUp: "../src/png/right-up.png",
-        leftDown: "../src/png/left-down.png",
-        rightUp: "../src/png/right-up.png"
-    }
-    
-    
-    
-    
+        directDown: "../src/png/down.png",
+        directUp: "../src/png/up.png",
+        directLeft: "../src/png/left.png",
+        directRight: "../src/png/right.png",
+        directLeftUp: "../src/png/left-up.png",
+        directRightUp: "../src/png/right-up.png",
+        directLeftDown: "../src/png/left-down.png",
+        directRightDown: "../src/png/right-down.png"
+    };
+
+
+
+
     var ctx = document.getElementById('game-plain').getContext('2d');
     ctx.strokeStyle = "rgb(255,165,0)";
     for (var i = 2; i < 10; i++) {
@@ -25,22 +27,29 @@ var GameMap = function () {
             x: i * 40,
             y: 0
         });
-        ctx.strokeRect(i * 40, 440, 40, 40);
-        this.map['select'].push({
-            x: i * 40,
-            y: 440
-        });
-        ctx.strokeRect(0, i * 40, 40, 40);
-        this.map['select'].push({
-            x: 0,
-            y: i * 40
-        });
+    }
+    for (var i = 2; i < 10; i++) {
         ctx.strokeRect(440, i * 40, 40, 40);
         this.map['select'].push({
             x: 440,
             y: i * 40
         });
     }
+    for (var i = 9; i >= 2; i--) {
+        ctx.strokeRect(i * 40, 440, 40, 40);
+        this.map['select'].push({
+            x: i * 40,
+            y: 440
+        });
+    }
+    for (var i = 9; i >= 2; i--) {
+        ctx.strokeRect(0, i * 40, 40, 40);
+        this.map['select'].push({
+            x: 0,
+            y: i * 40
+        });
+    }
+    
 
     ctx.strokeStyle = "green";
     for (var i = 2; i <= 9; i++) {
@@ -49,31 +58,40 @@ var GameMap = function () {
             x: i * 40,
             y: 40
         });
-        ctx.strokeRect(40, i * 40, 40, 40);
-        this.map['arrow'].push({
-            x: 40,
-            y: i * 40
-        });
-        ctx.strokeRect(i * 40, 400, 40, 40);
-        this.map['arrow'].push({
-            x: i * 40,
-            y: 400
-        });
+    }
+    for (var i = 2; i <= 9; i++) {
         ctx.strokeRect(400, i * 40, 40, 40);
         this.map['arrow'].push({
             x: 400,
             y: i * 40
         });
     }
+    for (var i = 9; i >= 2; i--) {
+        ctx.strokeRect(i * 40, 400, 40, 40);
+        this.map['arrow'].push({
+            x: i * 40,
+            y: 400
+        });
+    }
+    for (var i = 9; i >= 2; i--) {
+        ctx.strokeRect(40, i * 40, 40, 40);
+        this.map['arrow'].push({
+            x: 40,
+            y: i * 40
+        });
+    }
+
+
 
     ctx.strokeStyle = "red";
     for (var i = 2; i < 10; i++) {
+        this.map['map'][i - 2] = [];
         for (var j = 2; j < 10; j++) {
             ctx.strokeRect(i * 40, j * 40, 40, 40);
-            this.map['map'].push({
+            this.map['map'][i - 2][j - 2] = {
                 x: i * 40,
-                y: i * 40
-            });
+                y: j * 40
+            };
         }
     }
 
@@ -81,13 +99,41 @@ var GameMap = function () {
     this.ctx = ctx;
 };
 
+GameMap.prototype.init = function (map, ring, people) {
+    this.plate = map;
+    this.ring = ring;
+    for (var i = 0; i < 8; i++) {
+        for (var j = 0; j < 8; j++) {
+            if (map[i][j] == "oneToThree")
+                this.placeImage("../src/png/small.png", this.map['map'][i][j]);
+            else if (map[i][j] == "threeToFive")
+                this.placeImage("../src/png/medium.png", this.map['map'][i][j]);
+            else if (map[i][j] == "fiveToThousand")
+                this.placeImage("../src/png/large.png", this.map['map'][i][j]);
+            else if (map[i][j] == "toolSwapOrder")
+                this.placeImage("../src/png/treasure-blue.png", this.map['map'][i][j]);
+            else if (map[i][j] == "toolSwapPosition")
+                this.placeImage("../src/png/treasure-red.png", this.map['map'][i][j]);
+            else if (map[i][j] == "toolMoveRow")
+                this.placeImage("../src/png/treasure-yellow.png", this.map['map'][i][j]);
+            else if (map[i][j] == "toolMoveCol")
+                this.placeImage("../src/png/treasure-original.png", this.map['map'][i][j]);
+            else if (map[i][j] == "toolDirectRingRandom")
+                this.placeImage("../src/png/treasure-purple.png", this.map['map'][i][j]);
+        }
+    }
+    for (var i = 0; i < this.map['arrow'].length; i++) {        
+        this.placeImage(this.arrow[ring[i]], this.map['arrow'][i]);
+    }
+    
+};
 
-GameMap.prototype.randomArrow = function(){
+GameMap.prototype.randomArrow = function () {
     var that = this;
     var n = 0;
-    this.map['arrow'].forEach(function(element, index, array){
+    this.map['arrow'].forEach(function (element, index, array) {
         var keys = Object.keys(that.arrow);
-        that.placeImage(that.arrow[keys[ keys.length * Math.random() << 0]], element);
+        that.placeImage(that.arrow[keys[keys.length * Math.random() << 0]], element);
     });
 };
 
@@ -125,7 +171,7 @@ GameMap.prototype.placeImage = function (url, location) {
     var image = new Image();
     image.onload = function () {
         var ptrn = ctx.createPattern(image, 'no-repeat');
-        ctx.drawImage(image, 0, 0, image.width, image.height, location.x+4, location.y+4, 32, 32);
+        ctx.drawImage(image, 0, 0, image.width, image.height, location.x + 4, location.y + 4, 32, 32);
     };
     image.src = url;
 };
@@ -157,7 +203,7 @@ GameMap.prototype.moveObject = function (player, location) {
         tmp.x = tmp.x + vx;
         tmp.y = tmp.y + vy;
         count++;
-        if(count == 100){
+        if (count == 100) {
             clearInterval(drawInterval);
         }
     }, 5);
