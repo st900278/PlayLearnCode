@@ -9,7 +9,7 @@ var GameSocket = function(url){
 
 
 GameSocket.prototype.login = function(user, callback){
-    console.log("hi");
+    console.log(this.socket);
     this.socket.emit('login', {
         userID: user
     });
@@ -26,7 +26,7 @@ GameSocket.prototype.getRoomList = function(){
 
 GameSocket.prototype.getUserInfo = function(){
     var userInfo;
-    this.socket.on('userList', function(data){
+    this.socket.on('loginAck', function(data){
         userInfo = data;
     });
     return userInfo;

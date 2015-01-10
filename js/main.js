@@ -32,5 +32,6 @@ var inRoom = function(){
     js.src = "./js/room.js";
 
     document.body.appendChild(js);
-    game.socket.getUserInfo();
+    var userinfo = game.socket.getUserInfo();
+    console.log(userinfo);
 };
