@@ -125,7 +125,7 @@ GameMap.prototype.placeImage = function (url, location) {
     var image = new Image();
     image.onload = function () {
         var ptrn = ctx.createPattern(image, 'no-repeat');
-        ctx.drawImage(image, 0, 0, image.width, image.height, location.x, location.y, 40, 40);
+        ctx.drawImage(image, 0, 0, image.width, image.height, location.x+4, location.y+4, 32, 32);
     };
     image.src = url;
 };

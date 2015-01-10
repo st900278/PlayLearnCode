@@ -39,12 +39,32 @@ GameSocket.prototype.listenRemoveUser = function (callback) {
     });
 };
 
-GameSocket.prototype.addRoom = function(room){
-    this.socket.emit('newRoom', room);
+GameSocket.prototype.addRoom = function(room, callback){
+    this.socket.emit('newRoom', room, callback());
 };
 
 GameSocket.prototype.listenAddRoom = function(callback){
     this.socket.on('roomAdd', function(data){
+        console.log("test");
         callback(data);
     });
 };
+
+GameSocket.prototype.listenModifyRoom = function(callback){
+    this.socket.on('roomModified', function(data){
+        console.log("callback");
+        callback(data);
+    });
+};
+
+
+
+
+
+
+
+
+
+
+
+
