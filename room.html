@@ -1,62 +1,53 @@
 <div class="row">
     <div class="room-list eight columns">
-        <div class="row">
-            <div class="rooms">
-                <div class="row">Hi room</div>
-                <div class="row">
-                    <div class="three columns">
-                        人數:
-                        <span class="nowPop">1</span>
-                        /
-                        <span class="limit">4</span>
-                    </div>
-                    <div class="three columns">
-                    &nbsp;
-                    </div>
-                    <div class="three columns">
-                    &nbsp;
-                    </div>
-                    <div class="three columns">
-                        <button class="button-small">start</button>
-                    </div>
+        <div class="room">
+            <div class="row">Hi room</div>
+            <div class="row">
+                <div class="two columns">
+                    人數:
+                    <span class="population">1</span>
+                    /
+                    <span class="require">4</span>
                 </div>
-            </div>
-            
-            <div class="rooms">
-                <div class="row">Hi room</div>
-                <div class="row">
-                    <div class="three columns">
-                        人數:
-                        <span class="nowPop">1</span>
-                        /
-                        <span class="limit">4</span>
-                    </div>
-                    <div class="three columns">
-                    &nbsp;
-                    </div>
-                    <div class="three columns">
-                    &nbsp;
-                    </div>
-                    <div class="three columns">
-                        <button class="button-small">start</button>
-                    </div>
+                <div class="two columns">
+                    時間：
+                    <span class="think-time">1
+                        
+                        </span>
+                    分鐘
                 </div>
-            </div>
-            <div class="rooms" id="addRoom">新增房間</div>
+                <div class="two columns">
+                    種類
+                    <span class="type">一般</span>
+                </div>
+                <div class="two columns">
+                    大小
+                    <span class="size">一般</span>
+                </div>
+                <div class="two columns">
+                    回合
+                    <span class="times">5次</span>
+                </div>
 
+                <div class="two columns">
+                    <button class="button-small">start</button>
+                </div>
+            </div>
         </div>
+
+        <div class="room" id="addRoom">新增房間</div>
     </div>
+    
     <div class="user four columns">
         <div class="user-info box brown-bg">
-            <div class="user-name">暱稱: Oberon</div>
-            <div class="login-time">登入時間: Oberon</div>
-            <div class="recent-time">現在時間: Oberon</div>
+            <div>暱稱: <span id="user-name"></span>
+            </div>
+
+            <div>登入時間: <span id="login-time"></span>
+            </div>
         </div>
-                
-        <div class="players box brown-bg">
-            <div class="user-name">暱稱: Oberon</div>
-            <div class="login-time">登入時間: Oberon</div>
-            <div class="recent-time">現在時間: Oberon</div>
+
+        <div class="users box brown-bg">
         </div>
     </div>
 </div>

@@ -1,13 +1,13 @@
 var ToolBox = function(size){
-    this.boxsize = size;
+    this.boxsize = size || 4;
     this.ctx = document.getElementById('tool').getContext('2d');
     var ctx = this.ctx;
     this.pointer = 0;
     this.tool = [];
     ctx.strokeRect(0, 0, 100, 100);
-    ctx.strokeRect(100, 100, 100, 100);
-    ctx.strokeRect(0, 0, 300, 100);
-    ctx.strokeRect(0, 0, 400, 100);
+    ctx.strokeRect(100, 0, 100, 100);
+    ctx.strokeRect(200, 0, 100, 100);
+    ctx.strokeRect(300, 0, 100, 100);
     
     
 //    ctx.strokeRect(0, 0, 100, 200);

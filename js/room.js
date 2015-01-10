@@ -6,4 +6,11 @@ document.getElementById("addRoom").addEventListener('mouseup', function(){
 });
 document.getElementById("addRoom").addEventListener('click', function(){
     console.log("test");
+    game.socket.addRoom({
+        roomName: "meow",
+        playerRequire: 4,
+        gamePlateSize: 8,
+        stageNum: 5, 
+        gameType: 'DEFAULT'
+    });
 });
