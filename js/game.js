@@ -1,25 +1,4 @@
-var GameRoom = function(socket){
-    //var socket = new GameSocket();
-    this.map = new GameMap();
-    this.player = [];
-    this.createPlayer("tom", 2, 2, "red");
-    this.createPlayer("tom", 6, 2, "orange");
-    this.createPlayer("tom", 7, 3, "grey");
+var Game = function(){
+    this.socket = new GameSocket("http://140.114.86.191:4455");
     
-    
-};
-
-GameRoom.prototype.createPlayer = function(name, x, y, color){
-    var people = new Player(name, x, y, color);
-    this.player.push(new Player());
-    this.map.setPlayerLocation(people);
-}
-
-GameRoom.prototype.creataMap = function(){
-    
-};
-GameRoom.prototype.setPlayer = function(){
-    
-
-
 };

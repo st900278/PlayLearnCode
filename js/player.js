@@ -1,9 +1,10 @@
-var Player = function(name, x, y, color){
+var Player = function(name, x, y, color, arrow){
     this.name = name || "";
     this.money = 0;
     this.x = x || 0;
     this.y = y || 0;
     this.color = color|| "";
+    this.arrow = arrow;
 };
 
 Player.prototype.setLocation = function(location){
