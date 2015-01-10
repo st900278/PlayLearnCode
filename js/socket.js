@@ -4,19 +4,16 @@ var GameSocket = function(url){
     var that = this;
     this.socket.on('connect', function(){
         console.log("connect");
-        that.gete();
     });
 };
 
-GameSocket.prototype.gete = function(){
-    this.socket.on('ack', function(a){console.log(a);});  
-};
 
-GameSocket.prototype.login = function(user){
+GameSocket.prototype.login = function(user, callback){
     console.log("hi");
     this.socket.emit('login', {
         userID: user
     });
+    callback();
 };
 
 GameSocket.prototype.getRoomList = function(){
@@ -37,7 +34,7 @@ GameSocket.prototype.getUserInfo = function(){
 
 GameSocket.prototype.getNowUser = function(){
     var user;
-    this.socket.on('user', function(data){
+    this.socket.on('loginAck', function(data){
         user = data;
     });
     return data;
