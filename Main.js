@@ -124,7 +124,21 @@ io.on('connection', function(clientSocket){
 				playerNumRequire: 2,
 				plateSize: 8,
 				stageNum: 5,
-				codingTimeMs: 60 * 1000 //One minute
+				codingTimeMs: 60 * 1000, //One minute
+
+				onClosedCallback: function(){
+					for(var i = 0; i < rooms.length; i++){
+						if(room.getId() === rooms[i].getId()){
+							rooms.splice(i, 1);
+							break;
+						}
+					}
+
+					io.to(context.IO_OUT_ROOM_ID).emit('roomDelete', {
+						name: room.getName(),
+						id: room.getId()
+					});
+				}
 			});
 			rooms.push(room);
 

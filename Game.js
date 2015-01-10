@@ -31,6 +31,8 @@ function Game(ioMain, roomName, initData){
 	this.plateSize = ('plateSize' in initData)? initData['plateSize'] : 8;
 	this.gamePlate = new GamePlate(context, this.plateSize);
 
+	this.onGameClosedCallback = ('onClosedCallback' in initData)? initData['onClosedCallback'] : null;
+
     initCodeEngine.call(this);
 }
 
@@ -38,9 +40,12 @@ Game.prototype.addPlayer = function(player){ //Add a new player into the room
     if(this.playersOrder.length >= this.requirePlayerNum){
 		player.getIOInstance().emit('error:RoomFull');
 	}else{
-		this.players[player.getId()] = player;
 		player.getIOInstance().leave(context.IO_OUT_ROOM_ID);
 		player.getIOInstance().join(this.id); //join to the socket.io room
+		player.getIOInstance().emit('playerList', {
+			players: this.getUsers()
+		});
+		this.players[player.getId()] = player;
 		this.playersOrder.push(player); //Default order
 		player.setRoom(this);
 
@@ -48,9 +53,6 @@ Game.prototype.addPlayer = function(player){ //Add a new player into the room
 			id: player.getId(),
 			name: player.getName(),
 			color: player.getColor()
-		});
-		player.getIOInstance().emit('playerList', {
-			players: this.getUsers()
 		});
 
 		addIORoute.call(this, player.getIOInstance());
@@ -68,10 +70,23 @@ Game.prototype.removePlayer = function(id){
 	if(this.players[id] !== undefined){
 		var player = this.players[id];
 
+		for(var i = 0; i < this.playersOrder.length; i++){
+			if(player.getId() === this.playersOrder[i].getId()){
+				this.playersOrder.splice(i, 1);
+				break;
+			}
+		}
+
 		player.getIOInstance().leave(this.id);
 		player.getIOInstance().join(context.IO_OUT_ROOM_ID);
 		player.setRoom(null);
 		delete this.players[id];
+
+		if(this.playersOrder.length <= 0){
+			//Destroy room
+			console.log('Room empty, destroy');
+			if(this.onGameClosedCallback !== null) this.onGameClosedCallback();
+		}
 	}
 };
 Game.prototype.getName = function(){
