@@ -10,10 +10,11 @@ var ToolBox = function(size){
     ctx.strokeRect(300, 0, 100, 100);
     
     
-//    ctx.strokeRect(0, 0, 100, 200);
-//    ctx.strokeRect(0, 0, 200, 200);
-//    ctx.strokeRect(0, 0, 300, 200);
-//    ctx.strokeRect(0, 0, 400, 200);
+    ctx.strokeRect(0, 100, 100, 100);
+    ctx.strokeRect(100, 100, 100, 100);
+    ctx.strokeRect(200, 100, 100, 100);
+    ctx.strokeRect(300, 100, 100, 100);
+
 };
 
 ToolBox.prototype.setTool

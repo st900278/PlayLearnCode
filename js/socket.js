@@ -43,21 +43,30 @@ GameSocket.prototype.addRoom = function(room, callback){
     this.socket.emit('newRoom', room, callback());
 };
 
+GameSocket.prototype.joinRoom = function(userId, roomId, callback){
+    this.socket.emit('joinRoom', {
+        'id': userId,
+        'roomId': roomId
+    }, callback());
+};
+
 GameSocket.prototype.listenAddRoom = function(callback){
     this.socket.on('roomAdd', function(data){
-        console.log("test");
         callback(data);
     });
 };
 
 GameSocket.prototype.listenModifyRoom = function(callback){
     this.socket.on('roomModified', function(data){
-        console.log("callback");
         callback(data);
     });
 };
 
-
+GameSocket.prototype.addRoomUser = function(callback){
+    this.socket.on('playerAdd', function(data){
+        callback();
+    });
+};
 
 
 

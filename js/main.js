@@ -5,6 +5,7 @@ var roomInterval, userInterval;
 var self = {};
 var nowUser = [];
 var nowRoom = [];
+var nowPlayer = [];
 
 var roomTemplate = '<div class="row">{{name}}</div>\
             <div class="row">\
@@ -21,14 +22,26 @@ var roomTemplate = '<div class="row">{{name}}</div>\
                     <span class="size">大小：{{gamePlateSize}}</span>\
                 </div>\
                 <div class="two columns">\
-                    <span class="times">回合：：{{stageNum}}</span>\
+                    <span class="times">回合：{{stageNum}}</span>\
                 </div>\
                 <div class="two columns">\
-                    <button class="button-small" id="{{id}}">start</button>\
+                    <button class="enter">start</button>\
                 </div>\
         </div>';
 
+var userTemplate = '<div class="user-name" id={{id}}>暱稱:{{name}}</div>';
 
+var playerTemplate = '<div class="row" data-target="{{order}}">\
+                <div class="player" style="background:{{color}}">\
+                    <div>玩家: {{name}}</div>\
+                    <div>\
+                        目前錢幣: \
+                        <span class="money">0</span>\
+                    </div>\
+                    <div>目前順序: <span class="order">1</span>\
+                    </div>\
+                </div>\
+            </div>';
 
 var loadPage = function (href) {
     var xmlhttp = new XMLHttpRequest();
@@ -38,12 +51,25 @@ var loadPage = function (href) {
 };
 
 var loadScript = function (url, element) {
+    var xhrObj = new XMLHttpRequest();
+    xhrObj.open('GET', url, false);
+    xhrObj.send('');
+
     var js = document.createElement("script");
     var element = element || document.body;
     js.type = "text/javascript";
-    js.src = url;
+    js.text = xhrObj.responseText;
     element.appendChild(js);
 };
+
+var sleep = function (milliseconds) {
+    var start = new Date().getTime();
+    for (var i = 0; i < 1e7; i++) {
+        if ((new Date().getTime() - start) > milliseconds) {
+            break;
+        }
+    }
+}
 
 document.querySelector("#login").addEventListener('click', function () {
     var id = document.getElementById("id");
@@ -67,7 +93,7 @@ var inRoom = function () {
 
         data['players'].forEach(function (element, index, array) {
             nowUser.push(element);
-            document.querySelector("div.users").innerHTML = document.querySelector("div.users").innerHTML + '<div class="user-name"id="' + element['id'] + '">暱稱:' + element['name'] + '</div>';
+            document.querySelector("div.users").innerHTML = document.querySelector("div.users").innerHTML + Mustache.render(userTemplate, element);
         });
 
         data['rooms'].forEach(function (element, index, array) {
@@ -82,7 +108,7 @@ var inRoom = function () {
 
         game.socket.listenAddUser(self.id, function (data) {
             nowUser.push(data);
-            document.querySelector("div.users").innerHTML = document.querySelector("div.users").innerHTML + '<div class="user-name" id="' + data['id'] + '">暱稱:' + data['name'] + '</div>';
+            document.querySelector("div.users").innerHTML = document.querySelector("div.users").innerHTML + Mustache.render(userTemplate, data);
         });
 
         game.socket.listenRemoveUser(function (data) {
@@ -97,7 +123,6 @@ var inRoom = function () {
         });
 
         game.socket.listenAddRoom(function (data) {
-            console.log("hifew");
             nowRoom.push(data);
             var addRoom = document.getElementById("addRoom");
             var room = document.createElement("div");
@@ -106,16 +131,15 @@ var inRoom = function () {
             room.innerHTML = Mustache.render(roomTemplate, data);
             document.querySelector(".room-list").insertBefore(room, addRoom);
         });
-        
-        game.socket.listenModifyRoom(function(data){
-            for(var i=0;i<nowRoom.length;i++){
-                if(nowRoom[i]['id'] == data['id']){
+
+        game.socket.listenModifyRoom(function (data) {
+            for (var i = 0; i < nowRoom.length; i++) {
+                if (nowRoom[i]['id'] == data['id']) {
                     nowRoom[i] = data;
                     break;
                 }
             }
             var addRoom = document.getElementById("addRoom");
-            console.log(data['id']);
             document.getElementById(data['id']).innerHTML = Mustache.render(roomTemplate, data);
 
         });
@@ -127,11 +151,38 @@ var inRoom = function () {
 
 
 var inGame = function () {
+    for(var i=0;i<nowRoom.length;i++){
+        if(nowRoom[i].id == self.roomId)self.room = nowRoom[i];
+    }
+    var nowStatus = [1];
     document.body.innerHTML = loadPage("../../game.html");
     document.querySelector("body").id = "game";
     loadScript("./js/player.js");
     loadScript("./js/gameMap.js");
     loadScript("./js/toolbox.js");
     loadScript("./js/gameRoom.js");
-    setTimeout(function(){var gameRoom = new GameRoom(game.socket);}, 500);
+
+    document.querySelector('.player-info').innerHTML = Mustache.render(playerTemplate, {name: self.name, color: self.color, order:1});
+    for(var i=1;i<self.room.playerRequire;i++){
+        document.querySelector('.player-info').innerHTML = document.querySelector('.player-info').innerHTML + Mustache.render(playerTemplate, {color: "#d3d3d3", order: i+1});
+    }
+    var gameRoom = new GameRoom(self.room);
+    game.socket.addRoomUser(function(){
+
+    });
+
+
+
+
+
+
+
+
+
 };
+
+
+
+
+
+
