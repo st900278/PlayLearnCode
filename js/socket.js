@@ -28,6 +28,7 @@ GameSocket.prototype.getUserInfo = function(){
     var userInfo;
     this.socket.on('loginAck', function(data){
         userInfo = data;
+        console.log(userInfo);
     });
     return userInfo;
 };
