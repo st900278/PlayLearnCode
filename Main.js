@@ -110,6 +110,7 @@ io.on('connection', function(clientSocket){
 			}
 
 			if(room !== undefined && room !== null){
+				console.log('Player ' + player.getName() + ' join to ' + room.getId());
 				player.getIOInstance().broadcast.to(context.IO_OUT_ROOM_ID).emit('roomModified', getRoomInfo(room));
 			}
 		}
@@ -140,7 +141,7 @@ io.on('connection', function(clientSocket){
 	});
 
 	clientSocket.on('disconnect', function(){
-		var removedName, removedColor, removedId;
+		var removedName, removedColor, removedId, removedRoom;
 
 		var player;
 		if( (player = findPlayerBySocket(clientSocket)) !== null ){
@@ -148,7 +149,10 @@ io.on('connection', function(clientSocket){
 			removedId = player.getId();
 			removedColor = player.getColor();
 
-			if(player.getRoom() !== null && player.getRoom() !== undefined) player.getRoom().removePlayer(removedId);
+			removedRoom = player.getRoom();
+			if(removedRoom !== null && removedRoom !== undefined){
+				removedRoom.removePlayer(removedId);
+			}
 
 			delete players[player.getId()];
 		}
@@ -165,10 +169,14 @@ io.on('connection', function(clientSocket){
 			}
 		}
 
-		io.emit('userRemoved', {
+		io.to(context.IO_OUT_ROOM_ID).emit('userRemoved', {
 			id: removedId
 		});
 		console.log("Removed player: " + removedName);
+
+		if(removedRoom !== null && removedRoom !== undefined){
+			io.to(context.IO_OUT_ROOM_ID).emit('roomModified', getRoomInfo(removedRoom));
+		}
 	});
 });
 

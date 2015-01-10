@@ -64,7 +64,6 @@ Game.prototype.removePlayer = function(id){
 		player.setRoom(null);
 		delete this.players[id];
 	}
-	/*TODO: broadcast this event*/
 };
 Game.prototype.getName = function(){
     return this.name;
