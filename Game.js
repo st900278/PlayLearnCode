@@ -365,13 +365,14 @@ var initCodeEngine = function(){
 						case 'item':
 							switch(msgParts[1]){
 								case 'pick':
-									var gmPlate = thiz.getGamePlate(),
+									var gmPlate = thiz.gamePlate.getGamePlate(),
 										plate = gmPlate.plate;
 									pX = player.getPosition().x;
 									pY = player.getPosition().y;
 
 									var item = plate[pY][pX];
 									switch(item){
+										/*
 										case context.Id.Plate.Money.LEVEL1:
 											player.addMoney(100, function(){});
 
@@ -393,9 +394,11 @@ var initCodeEngine = function(){
 												}
 											});
 											break;
-
+										*/
 										case context.Id.Plate.Money.LEVEL3:
-											player.addMoney(1000, function(){});
+											player.addMoney(1000, function(moneyTotal){
+												console.log('Player ' + player.getName() + ' total: ' + moneyTotal);
+											});
 
 											thiz.actionsBuffer[ player.getId() ].push({
 												msg: 'action.' + data['message'],

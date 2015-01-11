@@ -80,8 +80,8 @@ GamePlate.prototype.pickItem = function(rowIndex, colIndex, callback){ /*callbac
 			ret = {type: 'empty', value: null};
 			break;
 
-		case context.Id.Plate.Money.LEVEL1:
-		case context.Id.Plate.Money.LEVEL2:
+		//case context.Id.Plate.Money.LEVEL1:
+		//case context.Id.Plate.Money.LEVEL2:
 		case context.Id.Plate.Money.LEVEL3:
 			ret = {type: 'money', value: item};
 			break;
@@ -113,7 +113,7 @@ function shuffle(array) {
 }
 
 var initPlate = function(size, plate){
-	var moneyCount = Math.floor(size * size / 4),
+	var moneyCount = Math.floor(size * size / 6),
 		toolsCount = Math.floor(size * size / 12),
 		emptyCount = (size * size) - (moneyCount + toolsCount);
 

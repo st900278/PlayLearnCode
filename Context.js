@@ -7,17 +7,17 @@ function Context(){
 		Plate: {
 			EMPTY: "empty",
 			Money:{
-				LEVEL1: "oneToThree",
-				LEVEL2: "threeToFive",
+				//LEVEL1: "oneToThree",
+				//LEVEL2: "threeToFive",
 				LEVEL3: "fiveToThousand"
 			}
 		},
 		
 		Tools: {
-			SWAP_ORDER: "toolSwapOrder",
-			SWAP_POSITION: "toolSwapPosition",
-			MOVE_ROW: "toolMoveRow",
-			MOVE_COL: "toolMoveCol",
+			//SWAP_ORDER: "toolSwapOrder",
+			//SWAP_POSITION: "toolSwapPosition",
+			//MOVE_ROW: "toolMoveRow",
+			//MOVE_COL: "toolMoveCol",
 			DIRECT_RING_RANDOM: "toolDirectRingRandom"
 		},
 
