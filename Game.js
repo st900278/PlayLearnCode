@@ -23,7 +23,7 @@ function Game(ioMain, roomName, initData){
 	this.stageNum = ('stageNum' in initData)? initData['stageNum'] : 10;
 	this.currentStage = 0;
 	this.codingTimeMs = ('codingTimeMs' in initData)? initData['codingTimeMs'] : 30 * 1000;
-	this.summitCount = 0;
+	this.submitCount = 0;
 	this.codeStorage = {};
 	this.codeExecuter = new Executer(context, this.id, 20 * 1000/*timeout: 20 seconds*/);
 	this.executionBlocker = false;
@@ -164,15 +164,17 @@ Game.prototype.broadcast = function(event, msgText){
 var addIORoute = function(playerIO){
 	var thiz = this;
 
-	playerIO.on('codeSummit', function(data){
-		if('id' in data && 'codeText' in data && thiz.summitCount < thiz.playersOrder.length){
+	playerIO.on('codeSubmit', function(data){
+		if('id' in data && 'codeText' in data && thiz.submitCount < thiz.playersOrder.length){
 			thiz.codeStorage[ data['id'] ] = data['codeText'];
-			thiz.summitCount++;
+			thiz.submitCount++;
+			console.log('Player ' + data['id'] + ' submit code');
 
-			if(thiz.summitCount >= thiz.playersOrder.length){
-				//End summit, start running code
+			if(thiz.submitCount >= thiz.playersOrder.length){
+				//End submit, start running code
+				console.log('Start execute...');
 				executeCodes.call(thiz);
-				thiz.summitCount = 0;
+				thiz.submitCount = 0;
 			}
 		}
 	});
@@ -401,12 +403,12 @@ var initCodeEngine = function(){
 
 var executeCodes = function(){
 	var thiz = this;
-	var execOrder = this.playersOrder;
+	var execOrder = thiz.playersOrder;
 
 	for(var i = 0; i < execOrder.length; i++){
-		var id = execOrder[i];
-		this.executionBlocker = false;
-		this.codeExecuter.execute(this.players[id], this.codeStorage[id]);
+		//debugger;
+		thiz.executionBlocker = false;
+		thiz.codeExecuter.execute(execOrder[i], thiz.codeStorage[ execOrder[i].getId() ]);
 	}
 
 	//Start next stage
