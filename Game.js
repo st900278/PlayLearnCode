@@ -369,6 +369,7 @@ var initCodeEngine = function(){
 										plate = gmPlate.plate;
 									pX = player.getPosition().x;
 									pY = player.getPosition().y;
+									gmPlate.pickItem(pY, pX, function(){});
 
 									var item = plate[pY][pX];
 									switch(item){

@@ -32,7 +32,7 @@ var Executer = function(ctx, roomId, timeOut){
 };
 
 Executer.prototype.execute = function(player, code /*string*/){
-	var thiz = this;
+	//var thiz = this;
 
 	var execCode = prefixCode1 +
 				player.getId() + '\', \'' + this.roomId +
@@ -41,17 +41,8 @@ Executer.prototype.execute = function(player, code /*string*/){
 
 	var script = this.sandBox.createScript(execCode);
 
-	script.on('exit', function(err/*, output*/){
+	script.on('exit', function(/*err, output*/){
 		console.log('Exit');
-
-		/*
-		if(err !== null && err !== undefined){
-			console.log('Sandbox error: ' + err);
-			player.getRoom().finishExec(player.getId(), 'exec.err.runtime', err);
-		}else{
-			player.getRoom().finishExec(player.getId(), 'exec.exit', null);
-		}
-		*/
 	});
 
 	script.on('timeout', function(){
@@ -61,10 +52,5 @@ Executer.prototype.execute = function(player, code /*string*/){
 
 	script.run();
 };
-/*
-Executer.prototype.stopExec = function(){
-	this.sandBox.kill();
-};
-*/
 
 exports.Executer = Executer;

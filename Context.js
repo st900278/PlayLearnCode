@@ -18,7 +18,7 @@ function Context(){
 			//SWAP_POSITION: "toolSwapPosition",
 			//MOVE_ROW: "toolMoveRow",
 			//MOVE_COL: "toolMoveCol",
-			DIRECT_RING_RANDOM: "toolDirectRingRandom"
+			//DIRECT_RING_RANDOM: "toolDirectRingRandom"
 		},
 
 		Directions: {

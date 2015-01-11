@@ -122,10 +122,11 @@ var initPlate = function(size, plate){
 	for(i =0; i < toolsCount; i++) array.push('tool');
 	for(i =0; i < emptyCount; i++) array.push('empty');
 	array = shuffle(array);
+	/*
 	for(var tool in context.Id.Tools){
 		toolArray.push(context.Id.Tools[tool]);
 		//toolArray.push(tool);
-	}
+	}*/
 	for(var money in context.Id.Plate.Money){
 		moneyArray.push(context.Id.Plate.Money[money]);
 	}
