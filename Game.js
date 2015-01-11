@@ -31,6 +31,8 @@ function Game(ioMain, roomName, initData){
 	this.currentOrderIndex = 0;
 	this.actionsBuffer = {};
 
+	this.actionCompleteCount = 0;
+
 	this.plateSize = ('plateSize' in initData)? initData['plateSize'] : 8;
 	this.gamePlate = new GamePlate(context, this.plateSize);
 
@@ -184,6 +186,16 @@ var addIORoute = function(playerIO){
 				executeCodes.call(thiz);
 				thiz.submitCount = 0;
 			}
+		}
+	});
+
+	playerIO.on('actionsCompleteAck', function(/*data*/){
+		thiz.actionCompleteCount += 1;
+
+		if(thiz.actionCompleteCount >= thiz.playersOrder.length){ //Next Stage
+			thiz.actionCompleteCount = 0;
+
+			timerStarter.call(thiz);
 		}
 	});
 };
@@ -439,7 +451,8 @@ var executeCodes = function(){
 	var execOrder = thiz.playersOrder;
 	if(thiz.currentOrderIndex >= thiz.playersOrder.length){
 		thiz.currentOrderIndex = 0;
-		/*TODO: Start Next Stage*/
+		thiz.executionBlocker = false;
+		return;
 	}
 
 	thiz.actionsBuffer[ execOrder[thiz.currentOrderIndex].getId() ] = [];
@@ -464,4 +477,5 @@ Game.prototype.onTimeoutCallback = function(id){
 
 var gameEndCallback = function(){
 	console.log('Game over');
+	this.onGameClosedCallback.call(this);
 };
