@@ -6,6 +6,8 @@ var self = {};
 var nowUser = [];
 var nowRoom = [];
 var nowPlayer = [];
+var gameRoom;
+
 
 var roomTemplate = '<div class="row">{{name}}</div>\
             <div class="row">\
@@ -38,6 +40,7 @@ var playerTemplate = '<div class="player" id={{id}} style="background:{{color}}"
                         <span class="money">0</span>\
                     </div>\
                     <div>目前順序: <span class="order">{{order}}</span>\
+                    <div>目前方向: <span class="direction">{{direction}}</span>\
                     </div>\
                 </div>';
 
@@ -202,16 +205,19 @@ var inGame = function () {
     });
 
     game.socket.gameStart(function (data) {
+
+        gameRoom = new GameRoom(self.room);
+        for (var i = 0; i < gameRoom.roominfo.playerRequire; i++) event[i] = "";
         var plate = data.plate;
         var ring = data.ring;
         var playerData = data.playerPositions;
-        var gameRoom = new GameRoom(self.room);
+
         gameRoom.map.init(plate, ring);
 
         for (var i = 0; i < playerData.length; i++) {
             for (var j = 0; j < nowPlayer.length; j++) {
                 if (playerData[i].id == nowPlayer[j].id) {
-                    gameRoom.createPlayer(playerData[i].id, playerData[i].x, playerData[i].y, playerData[i].directRingPointer, nowPlayer[j].color, i + 1);
+                    gameRoom.createPlayer(playerData[i].id, playerData[i].x, playerData[i].y, playerData[i].directRingPointer, nowPlayer[j].color, playerData[i].direction, i + 1);
                     setOrder(playerData[i].id, i + 1);
                 }
             }
@@ -225,7 +231,9 @@ var inGame = function () {
             document.querySelector(".coding-plain").disabled = true;
             game.socket.sendSubmit(self.id, document.querySelector(".coding-plain").value);
         });
-        game.socket.action();
+        game.socket.action(function (data) {
+            actionHandler(data);
+        });
     });
 
 
@@ -238,3 +246,91 @@ var setOrder = function (id, neworder) {
 var setMoney = function (id, newmoney) {
     document.getElementById(id).querySelector("span.money").innerHTML = newmoney;
 };
+
+
+
+var event = [];
+var actionHandler = function (data) {
+    var id = data.id;
+    var player = gameRoom.getPlayer(id);
+    //console.log(data);
+    event[player.order - 1] = {
+        player: player,
+        data: data.action
+    };
+
+    var flag = 0;
+    for (var i = 0; i < gameRoom.roominfo.playerRequire; i++) {
+        if (event[i] == "")
+            flag = 1;
+    }
+    if (flag == 0) {
+        for (var j = 0; j < gameRoom.roominfo.playerRequire; j++) {
+
+            var recentPlayer = event[j].player;
+            var data = event[j].data;
+
+            for (var i = 0; i < data.length; i++) {
+                var action = data[i].msg.split(".");
+                switch (action[0]) {
+                case "action":
+                    switch (action[1]) {
+                    case "step":
+                        switch (action[2]) {
+                            case "pointer":
+                                if (action[3] == "clock") {
+                                    console.log("test");
+                                    console.log(recentPlayer);
+                                    gameRoom.map.removePlayerRing(recentPlayer);
+                                    recentPlayer.pointer = (recentPlayer.pointer + 1) % (gameRoom.roominfo.gamePlateSize * 4);
+                                    gameRoom.map.setPlayerRing(recentPlayer);
+
+
+                                } else if (action[3] == "counterClock") {
+                                    gameRoom.map.removePlayerRing(recentPlayer);
+                                    recentPlayer.pointer = (recentPlayer.pointer + gameRoom.roominfo.gamePlateSize * 4 - 1) % (gameRoom.roominfo.gamePlateSize * 4);
+                                    gameRoom.map.setPlayerRing(recentPlayer);
+                                }
+                                break;
+                            case "setArrow":
+                                console.log(recentPlayer.direction);
+                                recentPlayer.direction = gameRoom.map.ring[recentPlayer.pointer];
+                                console.log(recentPlayer.direction);
+                                break;
+                            case "next":
+                                console.log(recentPlayer.direction);
+                                if (recentPlayer.direction == "directUp") gameRoom.map.moveUp(recentPlayer);
+                                if (recentPlayer.direction == "directDown") gameRoom.map.moveDown(recentPlayer);
+                                if (recentPlayer.direction == "directRight") gameRoom.map.moveRight(recentPlayer);
+                                if (recentPlayer.direction == "directLeft") gameRoom.map.moveLeft(recentPlayer);
+                                if (recentPlayer.direction == "directRightUp") gameRoom.map.moveRightUp(recentPlayer);
+                                if (recentPlayer.direction == "directRightDown") gameRoom.map.moveRightDown(recentPlayer);
+                                if (recentPlayer.direction == "directLeftUp") gameRoom.map.moveLeftUp(recentPlayer);
+                                if (recentPlayer.direction == "directLeftDown") gameRoom.map.moveLeftDown(recentPlayer);
+                                break;
+                        }
+
+                        break;
+                    case "item":
+                        switch (action[2]) {
+                        case "pick":
+                            console.log(data[i].data.money);
+                            gameRoom.map.plate[recentPlayer.y][recentPlayer.x] = "empty";
+                            gameRoom.map.drawMap();
+                        }
+                    }
+                                                
+                break;
+                }
+                
+            }
+            
+            
+            
+        }
+        for(var i = 0;i<4;i++){
+            event[i] = "";
+        };
+        game.socket.actionComplete();
+    }
+}

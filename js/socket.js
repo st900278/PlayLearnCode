@@ -105,44 +105,15 @@ GameSocket.prototype.sendSubmit = function (id, code) {
 };
 
 
-GameSocket.prototype.action = function () {
+GameSocket.prototype.action = function (callback) {
     this.socket.on('playerAction', function (data) {
-        console.log(data.id);
-        for (var i = 0; i < data.action.length; i++) {
-            var action = data.action[i].split(".");
-            switch (action[0]) {
-            case "action":
-                switch (action[1]) {
-                case "step":
-                    switch (action[2]) {
-                    case "pointer":
-                        if (action[3] == "clock")
-                            console.log("clock");
-                        else if (action[3] == "counterClock")
-                            console.log("counter clock");
-                        break;
-                    case "setArrow":
-                        console.log("setarrow");
-                        break;
-                    case "nextStep":
-                        console.log("nextStep");
-                    }
-
-                    break;
-                }
-                break;
-
-            }
-        }
-
-        /* action.step.pointer.clock
-        
-            action.step.setarrow
-        switch(action){
-            case
-        }
-        */
+        callback(data);
     });
 
 
+};
+
+GameSocket.prototype.actionComplete = function(callback){
+    this.socket.emit('actionsCompleteAck', function(){
+    });
 };

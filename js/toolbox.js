@@ -29,9 +29,9 @@ ToolBox.prototype.setPointer = function(){
     var image = new Image();
     image.onload = function () {
         var ptrn = ctx.createPattern(image, 'no-repeat');
-        ctx.drawImage(image, 0, 0, image.width, image.height, 100, 0, 100, 100);
+        ctx.drawImage(image, 0, 0, image.width, image.height, 0, 100, 100, 100);
     };
-    image.src = "../src/png/too-box-arrow.png;
+    image.src = "../src/png/tool-box-arrow.png";
 };
 
 ToolBox.prototype.setPointerLeft = function(){

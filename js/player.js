@@ -1,4 +1,4 @@
-var Player = function(id, x, y, pointer, color, order){
+var Player = function(id, x, y, pointer, color, direction, order){
     this.id = id || "";
     this.money = 0;
     this.x = x || 0;
@@ -7,6 +7,7 @@ var Player = function(id, x, y, pointer, color, order){
     console.log(this.color);
     this.pointer = pointer;
     this.order = order;
+    this.direction = direction;
 };
 
 Player.prototype.setLocation = function(location){
@@ -26,3 +27,6 @@ Player.prototype.setMoney = function(money){
 Player.prototype.getMoney = function(){
     return this.money;
 };
+
+
+
