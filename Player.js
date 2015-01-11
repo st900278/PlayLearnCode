@@ -31,6 +31,7 @@ function Player(ctx, id, initData) {
 	};
 
 	this.directRingPointer = 0;
+	this.currentDirection = null;
 
 	this.toolBox = []; //The newest item has the biggest index
 	this.toolBoxPointer= 0;
@@ -82,6 +83,17 @@ Player.prototype.getDirectRingPointer = function(){
 };
 Player.prototype.moveDirectRingPointer = function(offset){
 	this.directRingPointer += offset;
+
+	this.directRingPointer %= (this.plateSize * 4);
+	if(this.directRingPointer < 0){
+		this.directRingPointer += (this.plateSize * 4);
+	}
+};
+Player.prototype.getCurrentDirection = function(){
+	return this.currentDirection;
+};
+Player.prototype.setCurrentDirection = function(direct){
+	this.currentDirection = direct;
 };
 
 Player.prototype.putTool = function(tool, callback){ /*callback(err, toolIndex)*/

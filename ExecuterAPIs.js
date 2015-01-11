@@ -50,31 +50,17 @@ exports.api = {
 	/*Public APIs*/
 
 	/*Movement part*/
-	MoveRight: function(){
+	ArrowPtrClock: function(){
 		ipc.of[serverId].emit('msg.action', {
 			id: ipc.config.id,
-			message: 'movement.Right'
+			message: 'step.pointer.Clock'
 		});
 	},
 
-	MoveLeft: function(){
+	ArrowPtrCounterClock: function(){
 		ipc.of[serverId].emit('msg.action', {
 			id: ipc.config.id,
-			message: 'movement.Left'
-		});
-	},
-
-	MoveUp: function(){
-		ipc.of[serverId].emit('msg.action', {
-			id: ipc.config.id,
-			message: 'movement.Up'
-		});
-	},
-
-	MoveDown: function(){
-		ipc.of[serverId].emit('msg.action', {
-			id: ipc.config.id,
-			message: 'movement.Down'
+			message: 'step.pointer.CounterClock'
 		});
 	},
 

@@ -94,7 +94,7 @@ Game.prototype.addPlayer = function(player){ //Add a new player into the room
 
 			//playersInit.call(this);
 
-			timerStarter.call(this);
+			//timerStarter.call(this);
 		}
 	}
 };
@@ -233,37 +233,99 @@ var initCodeEngine = function(){
 
 				try{
 					switch(msgParts[0]){
-						case 'movement':
-							var offsetX = 0, offsetY = 0;
+						case 'step':
 							switch(msgParts[1]){
-								case 'Right':
-									offsetX = 1;
+								case 'pointer':
+									switch(msgParts[2]){
+										case 'Clock': //Positive
+											player.moveDirectRingPointer(+1);
+											break;
+
+										case 'CounterClock': //Negative
+											player.moveDirectRingPointer(-1);
+											break;
+									}
 									break;
 
-								case 'Left':
-									offsetX = -1;
+								case 'SetArrow':
+									var ring = thiz.gamePlate.getGamePlate().ring;
+									player.setCurrentDirection(ring[ player.getDirectRingPointer() ]);
 									break;
 
-								case 'Down':
-									offsetY = -1;
-									break;
+								case 'Next':
+									var direct = player.getCurrentDirection();
+									var pX = player.getPosition().x,
+										pY = player.getPosition().y;
+									switch(direct){
+										case context.Id.Directions.UP:
+											player.setPosition(pX, pY - 1, function(err, nX, nY){
+												if(err !== null) throw err;
+												console.log('Player ' + player.getName() +
+															' new position: ' + nX + ', ' + nY);
+											});
+											break;
 
-								case 'Up':
-									offsetY = 1;
+										case context.Id.Directions.DOWN:
+											player.setPosition(pX, pY + 1, function(err, nX, nY){
+												if(err !== null) throw err;
+												console.log('Player ' + player.getName() +
+															' new position: ' + nX + ', ' + nY);
+											});
+											break;
+
+										case context.Id.Directions.LEFT:
+											player.setPosition(pX - 1, pY, function(err, nX, nY){
+												if(err !== null) throw err;
+												console.log('Player ' + player.getName() +
+															' new position: ' + nX + ', ' + nY);
+											});
+											break;
+
+										case context.Id.Directions.RIGHT:
+											player.setPosition(pX + 1, pY, function(err, nX, nY){
+												if(err !== null) throw err;
+												console.log('Player ' + player.getName() +
+															' new position: ' + nX + ', ' + nY);
+											});
+											break;
+
+										case context.Id.Directions.UP_LEFT:
+											player.setPosition(pX - 1, pY - 1, function(err, nX, nY){
+												if(err !== null) throw err;
+												console.log('Player ' + player.getName() +
+															' new position: ' + nX + ', ' + nY);
+											});
+											break;
+
+										case context.Id.Directions.UP_RIGHT:
+											player.setPosition(pX + 1, pY - 1, function(err, nX, nY){
+												if(err !== null) throw err;
+												console.log('Player ' + player.getName() +
+															' new position: ' + nX + ', ' + nY);
+											});
+											break;
+
+										case context.Id.Directions.DOWN_LEFT:
+											player.setPosition(pX - 1, pY + 1, function(err, nX, nY){
+												if(err !== null) throw err;
+												console.log('Player ' + player.getName() +
+															' new position: ' + nX + ', ' + nY);
+											});
+											break;
+
+										case context.Id.Directions.DOWN_RIGHT:
+											player.setPosition(pX + 1, pY + 1, function(err, nX, nY){
+												if(err !== null) throw err;
+												console.log('Player ' + player.getName() +
+															' new position: ' + nX + ', ' + nY);
+											});
+											break;
+
+										default:
+											throw ('Unidentified direction ' + direct);
+									}
 									break;
 							}
-							/*
-							player.getPosition(function(_id, ox, oy){
-								player.setPosition(ox + offsetX, oy + offsetY, function(err){
-									if(err !== null){
-										throw 'move to ' + (ox + offsetX) + ', ' + (oy + offsetY) + ' failed';
-									}
-								});
-							});
-							*/
-							break;
-
-						case 'step':
 							break;
 					}
 				}catch(execErr){
