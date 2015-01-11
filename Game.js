@@ -36,11 +36,12 @@ function Game(ioMain, roomName, initData){
     initCodeEngine.call(this);
 }
 
-Game.prototype.addPlayer = function(player){ //Add a new player into the room
+Game.prototype.addPlayer = function(player){ //Add a new player into the room, return  whether the player really join the room
 	var thiz = this;
 
     if(this.playersOrder.length >= this.requirePlayerNum){
-		player.getIOInstance().emit('error:RoomFull');
+		player.getIOInstance().emit('roomFull');
+		return false;
 	}else{
 		player.getIOInstance().leave(context.IO_OUT_ROOM_ID);
 		player.getIOInstance().join(this.id); //join to the socket.io room
@@ -70,6 +71,8 @@ Game.prototype.addPlayer = function(player){ //Add a new player into the room
 
 		addIORoute.call(this, player.getIOInstance());
 
+		console.log('Room ' + this.id + ' current player number ' + this.playersOrder.length);
+		console.log('Room ' + this.id + ' require player number ' + this.requirePlayerNum);
 		if(this.playersOrder.length >= this.requirePlayerNum){ //Game start
 
 			var playerPositions = [], p;
@@ -94,8 +97,9 @@ Game.prototype.addPlayer = function(player){ //Add a new player into the room
 
 			//playersInit.call(this);
 
-			//timerStarter.call(this);
+			timerStarter.call(this);
 		}
+		return true;
 	}
 };
 Game.prototype.removePlayer = function(id){
@@ -199,6 +203,7 @@ var timerStarter = function(){
 			stage: thiz.currentStage,
 			timeLimit: this.codingTimeMs
 		});
+		console.log('Game Timer Start');
 		setTimeout(function(){
 			codeRunner.call(thiz);
 		}, this.codingTimeMs);
@@ -207,6 +212,7 @@ var timerStarter = function(){
 var codeRunner = function(){
 	var thiz = this;
 
+	console.log('Game Timer Stop');
 	this.broadcast('timerStop', {
 		stage: thiz.currentStage
 	});
@@ -394,6 +400,7 @@ var initCodeEngine = function(){
 };
 
 var executeCodes = function(){
+	var thiz = this;
 	var execOrder = this.playersOrder;
 
 	for(var i = 0; i < execOrder.length; i++){
@@ -401,8 +408,13 @@ var executeCodes = function(){
 		this.executionBlocker = false;
 		this.codeExecuter.execute(this.players[id], this.codeStorage[id]);
 	}
+
+	//Start next stage
+	setTimeout(function(){
+		timerStarter.call(thiz);
+	}, 3000);
 };
 
 var gameEndCallback = function(){
-
+	console.log('Game over');
 };

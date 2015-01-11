@@ -103,16 +103,16 @@ io.on('connection', function(clientSocket){
 	var joinRoomCallback = function(data){
 		if('id' in data && data['id'] in players &&
 			'roomId' in data){
-			var room, player = players[ data['id'] ];
+			var room, player = players[ data['id']], joined;
 			for(var r in rooms){
 				room = rooms[r];
 				if(room.getId() === data['roomId']){
-					room.addPlayer(player);
+					joined = room.addPlayer(player);
 					break;
 				}
 			}
 
-			if(room !== undefined && room !== null){
+			if(room !== undefined && room !== null && joined == true){
 				console.log('Player ' + player.getName() + ' join to ' + room.getId());
 				player.getIOInstance().broadcast.to(context.IO_OUT_ROOM_ID).emit('roomModified', getRoomInfo(room));
 			}
