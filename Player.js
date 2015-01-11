@@ -31,7 +31,7 @@ function Player(ctx, id, initData) {
 	};
 
 	this.directRingPointer = 0;
-	this.currentDirection = null;
+	this.currentDirection = context.Id.Directions.RIGHT;
 
 	this.toolBox = []; //The newest item has the biggest index
 	this.toolBoxPointer= 0;

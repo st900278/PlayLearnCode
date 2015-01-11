@@ -1,6 +1,7 @@
 var SandBox = require('sandcastle').SandCastle;
 
 var prefixCode1 = "exports.main = function(){ \
+					\nvar gError = null; \
 					\nif( initGameIPCSocket(\'",
 	prefixCode2 = "\') !== true ){ throw new Error(\'Init socket to game failed\'); } \
 					\
@@ -10,8 +11,9 @@ var prefixCode1 = "exports.main = function(){ \
 	suffixCode = "	\
 					\n/*User code end*/ \
 					\n}catch(execErr){ \
-						\nthrow \'Code exception: \' + execErr.message; //Re-throw \
+						\ngError = \'Code exception: \' + execErr.message; \
 					\n} \
+					\nendIPC(gError);\
 					\nexit(null); \
 				\n};";
 
@@ -42,32 +44,27 @@ Executer.prototype.execute = function(player, code /*string*/){
 	script.on('exit', function(err/*, output*/){
 		console.log('Exit');
 
+		/*
 		if(err !== null && err !== undefined){
 			console.log('Sandbox error: ' + err);
-			player.getRoom().broadcast('execution', {
-				msg: 'exec.err.Exec',
-				data: err
-			});
+			player.getRoom().finishExec(player.getId(), 'exec.err.runtime', err);
 		}else{
-			player.getRoom().broadcast('execution', {
-				msg: 'exec.exit'
-			});
+			player.getRoom().finishExec(player.getId(), 'exec.exit', null);
 		}
+		*/
 	});
 
 	script.on('timeout', function(){
-		player.getRoom().broadcast('execution', {
-			msg: 'exec.err.Timeout',
-			data: thiz.timeOutMs
-		});
+		player.getRoom().onTimeoutCallback(player.getId());
 		console.log('Timeout');
 	});
 
 	script.run();
 };
-
+/*
 Executer.prototype.stopExec = function(){
 	this.sandBox.kill();
 };
+*/
 
 exports.Executer = Executer;

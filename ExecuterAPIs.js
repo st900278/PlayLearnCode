@@ -38,6 +38,13 @@ exports.api = {
 		return true;
 	},
 
+	endIPC: function(gError){
+		ipc.of[serverId].emit('ipc.end', {
+			id: ipc.config.id,
+			err: gError
+		});
+	},
+
 	/*
 	destroyIPCSocket: function(){
 		if(isConnected === true){
@@ -53,28 +60,28 @@ exports.api = {
 	ArrowPtrClock: function(){
 		ipc.of[serverId].emit('msg.action', {
 			id: ipc.config.id,
-			message: 'step.pointer.Clock'
+			message: 'step.pointer.clock'
 		});
 	},
 
 	ArrowPtrCounterClock: function(){
 		ipc.of[serverId].emit('msg.action', {
 			id: ipc.config.id,
-			message: 'step.pointer.CounterClock'
+			message: 'step.pointer.counterClock'
 		});
 	},
 
 	SetArrow: function(){
 		ipc.of[serverId].emit('msg.action', {
 			id: ipc.config.id,
-			message: 'step.SetArrow'
+			message: 'step.setArrow'
 		});
 	},
 
 	NextStep: function(){
 		ipc.of[serverId].emit('msg.action', {
 			id: ipc.config.id,
-			message: 'step.Next'
+			message: 'step.next'
 		});
 	},
 
@@ -101,14 +108,14 @@ exports.api = {
 	MoveToolBoxLeft: function(){
 		ipc.of[serverId].emit('msg.tool', {
 			id: ipc.config.id,
-			message: 'pointer.Left'
+			message: 'pointer.left'
 		});
 	},
 
 	MoveToolBoxRight: function(){
 		ipc.of[serverId].emit('msg.tool', {
 			id: ipc.config.id,
-			message: 'pointer.Right'
+			message: 'pointer.right'
 		});
 	},
 

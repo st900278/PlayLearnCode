@@ -23,10 +23,13 @@ function Game(ioMain, roomName, initData){
 	this.stageNum = ('stageNum' in initData)? initData['stageNum'] : 10;
 	this.currentStage = 0;
 	this.codingTimeMs = ('codingTimeMs' in initData)? initData['codingTimeMs'] : 30 * 1000;
+	this.codingTimer = null;
 	this.submitCount = 0;
 	this.codeStorage = {};
 	this.codeExecuter = new Executer(context, this.id, 20 * 1000/*timeout: 20 seconds*/);
 	this.executionBlocker = false;
+	this.currentOrderIndex = 0;
+	this.actionsBuffer = {};
 
 	this.plateSize = ('plateSize' in initData)? initData['plateSize'] : 8;
 	this.gamePlate = new GamePlate(context, this.plateSize);
@@ -84,6 +87,7 @@ Game.prototype.addPlayer = function(player){ //Add a new player into the room, r
 					x: p.getPosition().x,
 					y: p.getPosition().y,
 
+					direction: p.getCurrentDirection(),
 					directRingPointer: p.getDirectRingPointer()
 				});
 			}
@@ -158,6 +162,9 @@ Game.prototype.getCodingTimeMs = function(){
 };
 
 Game.prototype.broadcast = function(event, msgText){
+	console.log('Broadcast to room ' + this.id);
+	console.log('Broadcast event: ' + event);
+	console.log(msgText);
 	this.ioMain.to(this.id).emit(event, msgText);
 };
 
@@ -172,6 +179,7 @@ var addIORoute = function(playerIO){
 
 			if(thiz.submitCount >= thiz.playersOrder.length){
 				//End submit, start running code
+				if(thiz.codingTimer !== null) clearTimeout(thiz.codingTimer);
 				console.log('Start execute...');
 				executeCodes.call(thiz);
 				thiz.submitCount = 0;
@@ -196,26 +204,26 @@ var playersInit = function(){
 var timerStarter = function(){
 	var thiz = this;
 
-	if(this.currentStage >= this.stageNum){
+	if(thiz.currentStage >= thiz.stageNum){
 		//Game over
-		gameEndCallback.call(this);
+		gameEndCallback.call(thiz);
 	}else{
-		this.currentStage++;
-		this.broadcast('timerStart', {
+		thiz.currentStage++;
+		thiz.broadcast('timerStart', {
 			stage: thiz.currentStage,
-			timeLimit: this.codingTimeMs
+			timeLimit: thiz.codingTimeMs
 		});
 		console.log('Game Timer Start');
-		setTimeout(function(){
+		thiz.codingTimer = setTimeout(function(){
 			codeRunner.call(thiz);
-		}, this.codingTimeMs);
+		}, thiz.codingTimeMs);
 	}
 };
 var codeRunner = function(){
 	var thiz = this;
 
 	console.log('Game Timer Stop');
-	this.broadcast('timerStop', {
+	thiz.broadcast('timerStop', {
 		stage: thiz.currentStage
 	});
 };
@@ -235,7 +243,10 @@ var initCodeEngine = function(){
 				var player;
 				if( (player = thiz.players[data['id']]) === undefined ) return;
 
-				thiz.broadcast('playerAction', 'action.' + data['message']);
+				thiz.actionsBuffer[ player.getId() ].push({
+					msg: 'action.' + data['message'],
+					data: null
+				});
 
 				var msgParts = data['message'].split('.');
 
@@ -245,22 +256,22 @@ var initCodeEngine = function(){
 							switch(msgParts[1]){
 								case 'pointer':
 									switch(msgParts[2]){
-										case 'Clock': //Positive
+										case 'clock': //Positive
 											player.moveDirectRingPointer(+1);
 											break;
 
-										case 'CounterClock': //Negative
+										case 'counterClock': //Negative
 											player.moveDirectRingPointer(-1);
 											break;
 									}
 									break;
 
-								case 'SetArrow':
+								case 'setArrow':
 									var ring = thiz.gamePlate.getGamePlate().ring;
 									player.setCurrentDirection(ring[ player.getDirectRingPointer() ]);
 									break;
 
-								case 'Next':
+								case 'next':
 									var direct = player.getCurrentDirection();
 									var pX = player.getPosition().x,
 										pY = player.getPosition().y;
@@ -339,12 +350,11 @@ var initCodeEngine = function(){
 				}catch(execErr){
 					thiz.executionBlocker = true; //Block the message receiving to ensure the game flow is correct
 					console.log('Game execution error: ' + execErr);
-					thiz.broadcast('execution', {
+					thiz.actionsBuffer[player.getId()].push({
 						msg: 'exec.err.game',
 						data: execErr
 					});
-
-					thiz.codeExecuter.stopExec();
+					//thiz.codeExecuter.stopExec();
 				}
 			}
 		});
@@ -397,6 +407,29 @@ var initCodeEngine = function(){
 				}
 			}
 		});
+
+		ipc.server.on('ipc.end', function(data/*, socket*/){
+
+			var id = data['id'];
+			if(data['err'] !== null){
+				thiz.actionsBuffer[id].push({
+					msg: 'exec.err.runtime',
+					data: data['err']
+				});
+			}else{
+				thiz.actionsBuffer[id].push({
+					msg: 'exec.exit',
+					data: null
+				});
+			}
+			//debugger;
+			thiz.broadcast('playerAction', {
+				id: id,
+				action: thiz.actionsBuffer[id]
+			});
+
+			executeCodes.call(thiz);
+		});
 	});
 	ipc.server.start();
 };
@@ -404,17 +437,29 @@ var initCodeEngine = function(){
 var executeCodes = function(){
 	var thiz = this;
 	var execOrder = thiz.playersOrder;
-
-	for(var i = 0; i < execOrder.length; i++){
-		//debugger;
-		thiz.executionBlocker = false;
-		thiz.codeExecuter.execute(execOrder[i], thiz.codeStorage[ execOrder[i].getId() ]);
+	if(thiz.currentOrderIndex >= thiz.playersOrder.length){
+		thiz.currentOrderIndex = 0;
+		/*TODO: Start Next Stage*/
 	}
 
-	//Start next stage
-	setTimeout(function(){
-		timerStarter.call(thiz);
-	}, 3000);
+	thiz.actionsBuffer[ execOrder[thiz.currentOrderIndex].getId() ] = [];
+	thiz.executionBlocker = false;
+	thiz.codeExecuter.execute(execOrder[thiz.currentOrderIndex], thiz.codeStorage[ execOrder[thiz.currentOrderIndex].getId() ]);
+	thiz.currentOrderIndex += 1;
+};
+
+Game.prototype.onTimeoutCallback = function(id){
+	this.actionsBuffer[id].push({
+		msg: 'exec.err.timeout',
+		data: 'Time Limit: ' + this.codingTimeMs
+	});
+
+	this.broadcast('playerAction', {
+		id: id,
+		action: this.actionsBuffer[id]
+	});
+
+	executeCodes.call(this);
 };
 
 var gameEndCallback = function(){
