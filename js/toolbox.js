@@ -2,6 +2,9 @@ var ToolBox = function(size){
     this.boxsize = size || 4;
     this.ctx = document.getElementById('tool').getContext('2d');
     var ctx = this.ctx;
+    this.toolType = {
+    };
+    
     this.pointer = 0;
     this.tool = [];
     ctx.strokeRect(0, 0, 100, 100);
@@ -14,17 +17,21 @@ var ToolBox = function(size){
     ctx.strokeRect(100, 100, 100, 100);
     ctx.strokeRect(200, 100, 100, 100);
     ctx.strokeRect(300, 100, 100, 100);
-
+    
+    this.setPointer();
 };
 
 ToolBox.prototype.setPointer = function(){
     var ctx = this.ctx;
     var x = 50;
     var y = 150;
-    ctx.fillStyle = "green";
-    ctx.beginPath();
-    ctx.arc(x, y, 30, 0, 2 * Math.PI);
-    ctx.fill();
+    
+    var image = new Image();
+    image.onload = function () {
+        var ptrn = ctx.createPattern(image, 'no-repeat');
+        ctx.drawImage(image, 0, 0, image.width, image.height, 100, 0, 100, 100);
+    };
+    image.src = "../src/png/too-box-arrow.png;
 };
 
 ToolBox.prototype.setPointerLeft = function(){
@@ -47,5 +54,16 @@ ToolBox.prototype.addTool = function(url){
 
 ToolBox.prototype.leftPointer = function(){
     this.pointer = (this.pointer + 1) % this.boxsize;
+};
+
+
+GameMap.prototype.placeImage = function (url, location) {
+    var ctx = this.ctx;
+    var image = new Image();
+    image.onload = function () {
+        var ptrn = ctx.createPattern(image, 'no-repeat');
+        ctx.drawImage(image, 0, 0, image.width, image.height, location.x + 4, location.y + 4, 32, 32);
+    };
+    image.src = url;
 };
 

@@ -158,8 +158,11 @@ var inGame = function () {
     loadScript("./js/player.js");
     loadScript("./js/gameMap.js");
     loadScript("./js/toolbox.js");
+    loadScript("./lib/codemirror/codemirror.js");
+    loadScript("./lib/codemirror/javascript.js");
     loadScript("./js/gameRoom.js");
     loadScript("./js/gameScript.js");
+
     for (var i = 1; i <= self.room.playerRequire; i++) {
         var playerTag = document.createElement("div");
         playerTag.className = "row";
@@ -204,33 +207,34 @@ var inGame = function () {
         var playerData = data.playerPositions;
         var gameRoom = new GameRoom(self.room);
         gameRoom.map.init(plate, ring);
-        
+
         for (var i = 0; i < playerData.length; i++) {
             for (var j = 0; j < nowPlayer.length; j++) {
                 if (playerData[i].id == nowPlayer[j].id) {
-                    gameRoom.createPlayer(playerData[i].id, playerData[i].x, playerData[i].y, playerData[i].directRingPointer, nowPlayer[j].color, i+1);
-                    setOrder(playerData[i].id, i+1);
+                    gameRoom.createPlayer(playerData[i].id, playerData[i].x, playerData[i].y, playerData[i].directRingPointer, nowPlayer[j].color, i + 1);
+                    setOrder(playerData[i].id, i + 1);
                 }
             }
         }
 
-        game.socket.timerStart(function(){
+        game.socket.timerStart(function () {
             document.querySelector(".coding-plain").disabled = false;
         });
 
-        game.socket.timerStop(function(){
+        game.socket.timerStop(function () {
             document.querySelector(".coding-plain").disabled = true;
             game.socket.sendSubmit(self.id, document.querySelector(".coding-plain").value);
         });
+        game.socket.action();
     });
 
 
 };
 
 
-var setOrder = function(id, neworder){
+var setOrder = function (id, neworder) {
     document.getElementById(id).querySelector("span.order").innerHTML = neworder;
 };
-var setMoney = function(id, newmoney){
+var setMoney = function (id, newmoney) {
     document.getElementById(id).querySelector("span.money").innerHTML = newmoney;
 };

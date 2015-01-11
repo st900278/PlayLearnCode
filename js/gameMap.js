@@ -187,7 +187,13 @@ GameMap.prototype.setPlayerLocation = function (player) {
 };
 
 GameMap.prototype.setPlayerRing = function(player){
-
+    var ctx = this.ctx;
+    var x = this.map.select[player.pointer].x + this.width/2;
+    var y = this.map.select[player.pointer].y + this.width/2;
+    ctx.fillStyle = player.color;
+    ctx.beginPath();
+    ctx.arc(x, y, this.width * 0.4, 0, 2 * Math.PI);
+    ctx.fill();
 };
 
 GameMap.prototype.moveObject = function (player, location) {
