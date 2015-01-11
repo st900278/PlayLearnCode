@@ -31,13 +31,13 @@ var roomTemplate = '<div class="row">{{name}}</div>\
 
 var userTemplate = '<div class="user-name" id={{id}}>暱稱:{{name}}</div>';
 
-var playerTemplate = '<div class="player" style="background:{{color}}">\
+var playerTemplate = '<div class="player" id={{id}} style="background:{{color}}">\
                     <div>玩家: {{name}}</div>\
                     <div>\
                         目前錢幣: \
                         <span class="money">0</span>\
                     </div>\
-                    <div>目前順序: <span class="order">1</span>\
+                    <div>目前順序: <span class="order">{{order}}</span>\
                     </div>\
                 </div>';
 
@@ -159,7 +159,7 @@ var inGame = function () {
     loadScript("./js/gameMap.js");
     loadScript("./js/toolbox.js");
     loadScript("./js/gameRoom.js");
-
+    loadScript("./js/gameScript.js");
     for (var i = 1; i <= self.room.playerRequire; i++) {
         var playerTag = document.createElement("div");
         playerTag.className = "row";
@@ -175,11 +175,10 @@ var inGame = function () {
         nowStatus.push(0);
     }
     game.socket.getRoomUser(function (data) {
-        console.log(data);
         if (data.players.length > 0) {
 
             data.players.forEach(function (el, idx) {
-                nowPlayer.push(data);
+                nowPlayer.push(el);
                 for (var i = 0; i < nowStatus.length; i++) {
                     if (nowStatus[i] == 0) {
                         nowStatus[i] = 1;
@@ -200,15 +199,38 @@ var inGame = function () {
     });
 
     game.socket.gameStart(function (data) {
-        console.log(data);
         var plate = data.plate;
         var ring = data.ring;
         var playerData = data.playerPositions;
         var gameRoom = new GameRoom(self.room);
         gameRoom.map.init(plate, ring);
         
-        gameRoom.createPlayer(
-    })
+        for (var i = 0; i < playerData.length; i++) {
+            for (var j = 0; j < nowPlayer.length; j++) {
+                if (playerData[i].id == nowPlayer[j].id) {
+                    gameRoom.createPlayer(playerData[i].id, playerData[i].x, playerData[i].y, playerData[i].directRingPointer, nowPlayer[j].color, i+1);
+                    setOrder(playerData[i].id, i+1);
+                }
+            }
+        }
+
+        game.socket.timerStart(function(){
+            document.querySelector(".coding-plain").disabled = false;
+        });
+
+        game.socket.timerStop(function(){
+            document.querySelector(".coding-plain").disabled = true;
+            game.socket.sendSubmit(self.id, document.querySelector(".coding-plain").value);
+        });
+    });
 
 
+};
+
+
+var setOrder = function(id, neworder){
+    document.getElementById(id).querySelector("span.order").innerHTML = neworder;
+};
+var setMoney = function(id, newmoney){
+    document.getElementById(id).querySelector("span.money").innerHTML = newmoney;
 };

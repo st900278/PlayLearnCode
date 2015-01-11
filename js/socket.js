@@ -81,7 +81,29 @@ GameSocket.prototype.gameStart = function(callback){
 };
 
 
+GameSocket.prototype.timerStart = function(callback){
+    this.socket.on('timerStart', function(){
+        console.log("test timer");
+        callback();
+    });
+};
 
+/*
+stage timelimit
+*/
+
+GameSocket.prototype.timerStop = function(callback){
+    this.socket.on('timerStop', function(){
+        callback();
+    });
+};
+
+GameSocket.prototype.sendSubmit = function(id, code){
+    console.log(id + " " + code);
+    this.socket.emit('codeSubmit', {id: id, codeText:code}, function(){
+        console.log("success");
+    });
+};
 
 
 

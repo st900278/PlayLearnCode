@@ -6,9 +6,9 @@ var GameRoom = function(roominfo){
     this.toolbox.setPointer();
 };
 
-GameRoom.prototype.createPlayer = function(name, x, y, color, arrow){
-    var people = new Player(name, x, y, color, arrow);
-    this.player.push(new Player());
+GameRoom.prototype.createPlayer = function(id, x, y, pointer, color, order){
+    var people = new Player(id, x, y, pointer, color, order);
+    this.player.push(people);
     this.map.setPlayerLocation(people);
 }
 

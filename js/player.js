@@ -1,11 +1,12 @@
-var Player = function(name, id, x, y, color, arrow){
-    this.name = name || "";
+var Player = function(id, x, y, pointer, color, order){
     this.id = id || "";
     this.money = 0;
     this.x = x || 0;
     this.y = y || 0;
-    this.color = color|| "";
-    this.arrow = arrow;
+    this.color = color|| "green";
+    console.log(this.color);
+    this.pointer = pointer;
+    this.order = order;
 };
 
 Player.prototype.setLocation = function(location){
