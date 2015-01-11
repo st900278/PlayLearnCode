@@ -31,7 +31,14 @@ function Player(ctx, id, initData) {
 	};
 
 	this.directRingPointer = 0;
-	this.currentDirection = context.Id.Directions.RIGHT;
+	//this.currentDirection = context.Id.Directions.RIGHT;
+	//Random init direction
+	var directsArray = [];
+	for(var direct in context.Id.Directions){
+		directsArray.push(context.Id.Directions[direct]);
+	}
+	this.currentDirection = directsArray[ Math.floor(Math.random() * directsArray.length) ];
+	console.log('Player ' + this.name + 'init direction: ' + this.currentDirection);
 
 	this.toolBox = []; //The newest item has the biggest index
 	this.toolBoxPointer= 0;

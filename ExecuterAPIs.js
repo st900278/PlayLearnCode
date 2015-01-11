@@ -11,6 +11,9 @@ var serverId = null;
 
 //var CONNECT_TIMEOUT = 3000;
 
+var limitedStep = 0;
+var LIMITED_STEP_MAX = 3;
+
 exports.api = {
 	initGameIPCSocket: function(player_id, server_id){
 		if(isConnected === true) return true;
@@ -58,6 +61,9 @@ exports.api = {
 
 	/*Movement part*/
 	ArrowPtrClock: function(){
+		limitedStep++;
+		if(limitedStep > LIMITED_STEP_MAX) throw new Error('Exceed step limit');
+
 		ipc.of[serverId].emit('msg.action', {
 			id: ipc.config.id,
 			message: 'step.pointer.clock'
@@ -65,6 +71,9 @@ exports.api = {
 	},
 
 	ArrowPtrCounterClock: function(){
+		limitedStep++;
+		if(limitedStep > LIMITED_STEP_MAX) throw new Error('Exceed step limit');
+
 		ipc.of[serverId].emit('msg.action', {
 			id: ipc.config.id,
 			message: 'step.pointer.counterClock'
@@ -72,6 +81,9 @@ exports.api = {
 	},
 
 	SetArrow: function(){
+		limitedStep++;
+		if(limitedStep > LIMITED_STEP_MAX) throw new Error('Exceed step limit');
+
 		ipc.of[serverId].emit('msg.action', {
 			id: ipc.config.id,
 			message: 'step.setArrow'
@@ -79,6 +91,9 @@ exports.api = {
 	},
 
 	NextStep: function(){
+		limitedStep++;
+		if(limitedStep > LIMITED_STEP_MAX) throw new Error('Exceed step limit');
+
 		ipc.of[serverId].emit('msg.action', {
 			id: ipc.config.id,
 			message: 'step.next'

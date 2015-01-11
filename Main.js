@@ -126,7 +126,7 @@ io.on('connection', function(clientSocket){
 				//Init data
 				playerNumRequire: 2,
 				plateSize: context.GAME_PLATE_SIZE_DEFAULT,
-				stageNum: 5,
+				stageNum: 3,
 				codingTimeMs: 60 * 1000, //One minute
 
 				onClosedCallback: function(){

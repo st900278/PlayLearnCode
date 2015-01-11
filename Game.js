@@ -65,8 +65,10 @@ Game.prototype.addPlayer = function(player){ //Add a new player into the room, r
 		do{
 			var rx = Math.floor( Math.random() * this.plateSize),
 				ry = Math.floor( Math.random() * this.plateSize);
-		}while(plate[ry][rx] !== 'empty');
-		player.setPosition(rx, ry, function(){});
+		}while(plate[ry][rx] !== "empty");
+		player.setPosition(rx, ry, function(err, nX, nY){
+			console.log('Player ' + player.getName() + ' init position: ' + nX + ', ' + nY);
+		});
 
 		player.getIOInstance().broadcast.to(this.id).emit('playerAdd', {
 			id: player.getId(),
@@ -255,11 +257,6 @@ var initCodeEngine = function(){
 				var player;
 				if( (player = thiz.players[data['id']]) === undefined ) return;
 
-				thiz.actionsBuffer[ player.getId() ].push({
-					msg: 'action.' + data['message'],
-					data: null
-				});
-
 				var msgParts = data['message'].split('.');
 
 				try{
@@ -359,6 +356,11 @@ var initCodeEngine = function(){
 							}
 							break;
 					}
+
+					thiz.actionsBuffer[ player.getId() ].push({
+						msg: 'action.' + data['message'],
+						data: null
+					});
 				}catch(execErr){
 					thiz.executionBlocker = true; //Block the message receiving to ensure the game flow is correct
 					console.log('Game execution error: ' + execErr);
