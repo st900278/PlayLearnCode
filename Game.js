@@ -254,7 +254,8 @@ var initCodeEngine = function(){
 		ipc.server.on('msg.action', function(data/*, socket*/){
 			if(thiz.executionBlocker === true) return;
 			if('id' in data && 'message' in data){
-				var player;
+				var player,
+					pX, pY;
 				if( (player = thiz.players[data['id']]) === undefined ) return;
 
 				var msgParts = data['message'].split('.');
@@ -282,8 +283,8 @@ var initCodeEngine = function(){
 
 								case 'next':
 									var direct = player.getCurrentDirection();
-									var pX = player.getPosition().x,
-										pY = player.getPosition().y;
+									pX = player.getPosition().x;
+									pY = player.getPosition().y;
 									switch(direct){
 										case context.Id.Directions.UP:
 											player.setPosition(pX, pY - 1, function(err, nX, nY){
@@ -353,14 +354,62 @@ var initCodeEngine = function(){
 											throw ('Unidentified direction ' + direct);
 									}
 									break;
+
+							}
+							thiz.actionsBuffer[ player.getId() ].push({
+								msg: 'action.' + data['message'],
+								data: null
+							});
+							break;
+
+						case 'item':
+							switch(msgParts[1]){
+								case 'pick':
+									var gmPlate = thiz.getGamePlate(),
+										plate = gmPlate.plate;
+									pX = player.getPosition().x;
+									pY = player.getPosition().y;
+
+									var item = plate[pY][pX];
+									switch(item){
+										case context.Id.Plate.Money.LEVEL1:
+											player.addMoney(100, function(){});
+
+											thiz.actionsBuffer[ player.getId() ].push({
+												msg: 'action.' + data['message'],
+												data: {
+													money: 100
+												}
+											});
+											break;
+
+										case context.Id.Plate.Money.LEVEL2:
+											player.addMoney(500, function(){});
+
+											thiz.actionsBuffer[ player.getId() ].push({
+												msg: 'action.' + data['message'],
+												data: {
+													money: 500
+												}
+											});
+											break;
+
+										case context.Id.Plate.Money.LEVEL3:
+											player.addMoney(1000, function(){});
+
+											thiz.actionsBuffer[ player.getId() ].push({
+												msg: 'action.' + data['message'],
+												data: {
+													money: 1000
+												}
+											});
+											break;
+									}
+									break;
 							}
 							break;
 					}
 
-					thiz.actionsBuffer[ player.getId() ].push({
-						msg: 'action.' + data['message'],
-						data: null
-					});
 				}catch(execErr){
 					thiz.executionBlocker = true; //Block the message receiving to ensure the game flow is correct
 					console.log('Game execution error: ' + execErr);

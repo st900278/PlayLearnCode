@@ -100,6 +100,13 @@ exports.api = {
 		});
 	},
 
+	Pick: function(){
+		ipc.of[serverId].emit('msg.action', {
+			id: ipc.config.id,
+			message: 'item.pick'
+		});
+	},
+
 	/*Tool part*/
 	IsToolBoxEmpty: function(){
 		var asyncDone = false,
