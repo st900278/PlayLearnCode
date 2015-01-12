@@ -7,8 +7,8 @@ function Context(){
 		Plate: {
 			EMPTY: "empty",
 			Money:{
-				//LEVEL1: "oneToThree",
-				//LEVEL2: "threeToFive",
+				LEVEL1: "oneToThree",
+				LEVEL2: "threeToFive",
 				LEVEL3: "fiveToThousand"
 			}
 		},

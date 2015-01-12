@@ -124,10 +124,12 @@ io.on('connection', function(clientSocket){
 		if('roomName' in data){
 			var room = new Game(io, data['roomName'], {
 				//Init data
-				playerNumRequire: 2,
-				plateSize: context.GAME_PLATE_SIZE_DEFAULT,
-				stageNum: 3,
-				codingTimeMs: 60 * 1000, //One minute
+				playerNumRequire: ('playerRequire' in data)? parseInt(data['playerRequire']) : 2,
+				plateSize: ('gamePlateSize' in data)? parseInt(data['gamePlateSize']) : context.GAME_PLATE_SIZE_DEFAULT,
+				stageNum: ('stageNum' in data)? parseInt(data['stageNum']) : 3,
+				codingTimeMs: ('timeLimit' in data)? (parseInt(data['timeLimit']) * 60 * 1000) : 60 * 1000, //One minute
+				stepLimit: ('stepLimit' in data)? parseInt(data['stepLimit']) : 3,
+				//gameType: ('gameType' in data)? data['gameType'] : 'DEFAULT',
 
 				onClosedCallback: function(){
 					for(var i = 0; i < rooms.length; i++){

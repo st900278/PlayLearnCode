@@ -3,7 +3,7 @@ var SandBox = require('sandcastle').SandCastle;
 var prefixCode1 = "exports.main = function(){ \
 					\nvar gError = null; \
 					\nif( initGameIPCSocket(\'",
-	prefixCode2 = "\') !== true ){ throw new Error(\'Init socket to game failed\'); } \
+	prefixCode2 = ") !== true ){ throw new Error(\'Init socket to game failed\'); } \
 					\
 					\ntry{\
 					\n/*User code start*/ \
@@ -19,10 +19,11 @@ var prefixCode1 = "exports.main = function(){ \
 
 var context;
 
-var Executer = function(ctx, roomId, timeOut){
+var Executer = function(ctx, roomId, timeOut, stepLimit){
 	context = ctx;
-	this.timeOutMs = timeOut;
     this.roomId = roomId;
+	this.timeOutMs = timeOut;
+	this.stepLimit = stepLimit;
 
 	this.sandBox = new SandBox({
 		api: './ExecuterAPIs.js',
@@ -35,9 +36,9 @@ Executer.prototype.execute = function(player, code /*string*/){
 	//var thiz = this;
 
 	var execCode = prefixCode1 +
-				player.getId() + '\', \'' + this.roomId +
+				player.getId() + '\', \'' + this.roomId + '\', ' + this.stepLimit +
 				prefixCode2 + code + suffixCode;
-	//debugger;
+	debugger;
 
 	var script = this.sandBox.createScript(execCode);
 

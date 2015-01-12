@@ -11,15 +11,16 @@ var serverId = null;
 
 //var CONNECT_TIMEOUT = 3000;
 
-var limitedStep = 0;
-var LIMITED_STEP_MAX = 3;
+var stepCount = 0;
+var STEP_MAX = 3;
 
 exports.api = {
-	initGameIPCSocket: function(player_id, server_id){
+	initGameIPCSocket: function(player_id, server_id, stepLimit){
 		if(isConnected === true) return true;
 
 		ipc.config.id = player_id;
 		serverId = server_id;
+		STEP_MAX = stepLimit;
 
 		ipc.connectTo(serverId, function(){
 			ipc.of[serverId].on('connect', function(){
@@ -61,8 +62,8 @@ exports.api = {
 
 	/*Movement part*/
 	ArrowPtrClock: function(){
-		limitedStep++;
-		if(limitedStep > LIMITED_STEP_MAX) throw new Error('Exceed step limit');
+		stepCount++;
+		if(stepCount > STEP_MAX) throw new Error('Exceed step limit');
 
 		ipc.of[serverId].emit('msg.action', {
 			id: ipc.config.id,
@@ -71,8 +72,8 @@ exports.api = {
 	},
 
 	ArrowPtrCounterClock: function(){
-		limitedStep++;
-		if(limitedStep > LIMITED_STEP_MAX) throw new Error('Exceed step limit');
+		stepCount++;
+		if(stepCount > STEP_MAX) throw new Error('Exceed step limit');
 
 		ipc.of[serverId].emit('msg.action', {
 			id: ipc.config.id,
@@ -81,8 +82,8 @@ exports.api = {
 	},
 
 	SetArrow: function(){
-		limitedStep++;
-		if(limitedStep > LIMITED_STEP_MAX) throw new Error('Exceed step limit');
+		stepCount++;
+		if(stepCount > STEP_MAX) throw new Error('Exceed step limit');
 
 		ipc.of[serverId].emit('msg.action', {
 			id: ipc.config.id,
@@ -91,8 +92,8 @@ exports.api = {
 	},
 
 	NextStep: function(){
-		limitedStep++;
-		if(limitedStep > LIMITED_STEP_MAX) throw new Error('Exceed step limit');
+		stepCount++;
+		if(stepCount > STEP_MAX) throw new Error('Exceed step limit');
 
 		ipc.of[serverId].emit('msg.action', {
 			id: ipc.config.id,
@@ -107,26 +108,35 @@ exports.api = {
 		});
 	},
 
-	/*Tool part*/
-	IsToolBoxEmpty: function(){
+	/*TODO: Implement this function*/
+	/*
+	getMyPosition: function(){
 		var asyncDone = false,
-			isToolBoxEmpty = null;
+			myPosition = {
+				x: -1,
+				y: -1
+			};
 
-		ipc.of[serverId].on('msgAck.tool', function(data){
-			if('isToolBoxEmpty' in data){
-				isToolBoxEmpty = data['isToolBoxEmpty'];
+		ipc.of[serverId].on('msgAck.info', function(data){
+			if('player.position' in data){
+				if('x' in data['player.position'] && 'y' in data['player.position']){
+					myPosition.x = data['player.position']['x'];
+					myPosition.y = data['player.position']['y'];
+				}
 			}
 			asyncDone = true;
 		});
-		ipc.of[serverId].emit('msg.tool', {
+		ipc.of[serverId].emit('msg.info', {
 			id: ipc.config.id,
-			message: 'isToolBoxEmpty'
+			message: 'player.position'
 		});
 
-		while(!asyncDone){/*Wait until the result*/}
-		return isToolBoxEmpty;
+		while(!asyncDone){}
+		return myPosition;
 	},
+	*/
 
+	/*Tool part*/
 	MoveToolBoxLeft: function(){
 		ipc.of[serverId].emit('msg.tool', {
 			id: ipc.config.id,

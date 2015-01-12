@@ -23,10 +23,11 @@ function Game(ioMain, roomName, initData){
 	this.stageNum = ('stageNum' in initData)? initData['stageNum'] : 10;
 	this.currentStage = 0;
 	this.codingTimeMs = ('codingTimeMs' in initData)? initData['codingTimeMs'] : 30 * 1000;
+	this.stepLimit = ('stepLimit' in initData)? initData['stepLimit'] : 3;
 	this.codingTimer = null;
 	this.submitCount = 0;
 	this.codeStorage = {};
-	this.codeExecuter = new Executer(context, this.id, 20 * 1000/*timeout: 20 seconds*/);
+	this.codeExecuter = new Executer(context, this.id, 20 * 1000/*timeout: 20 seconds*/, this.stepLimit);
 	this.executionBlocker = false;
 	this.currentOrderIndex = 0;
 	this.actionsBuffer = {};
@@ -369,11 +370,10 @@ var initCodeEngine = function(){
 										plate = gmPlate.plate;
 									pX = player.getPosition().x;
 									pY = player.getPosition().y;
-									gmPlate.pickItem(pY, pX, function(){});
-
 									var item = plate[pY][pX];
+									thiz.gamePlate.pickItem(pY, pX, function(){});
+
 									switch(item){
-										/*
 										case context.Id.Plate.Money.LEVEL1:
 											player.addMoney(100, function(){});
 
@@ -395,7 +395,7 @@ var initCodeEngine = function(){
 												}
 											});
 											break;
-										*/
+
 										case context.Id.Plate.Money.LEVEL3:
 											player.addMoney(1000, function(moneyTotal){
 												console.log('Player ' + player.getName() + ' total: ' + moneyTotal);
@@ -422,6 +422,36 @@ var initCodeEngine = function(){
 						data: execErr
 					});
 					//thiz.codeExecuter.stopExec();
+				}
+			}
+		});
+
+		ipc.server.on('msg.info', function(data, socket){
+			if('id' in data && 'message' in data){
+				var player;
+				if( (player = thiz.players[data['id']]) === undefined){
+					ipc.server.emit(socket, 'msgAck.info', data['message']);
+				}else{
+					var msgParts = data['message'].split('.');
+
+					var pX, pY;
+					switch(msgParts[0]){
+						case 'player':
+							switch(msgParts[1]){
+								case 'position':
+									pX = player.getPosition().x;
+									pY = player.getPosition().y;
+
+									ipc.server.emit(socket, 'msgAck.info', {
+										'player.position': {
+											x: pX,
+											y: pY
+										}
+									});
+									break;
+							}
+							break;
+					}
 				}
 			}
 		});
@@ -532,5 +562,23 @@ Game.prototype.onTimeoutCallback = function(id){
 
 var gameEndCallback = function(){
 	console.log('Game over');
+
+	var playersInfo = [];
+	for(var p = 0; p < this.playersOrder.length; p++){
+		var player = this.playersOrder[p];
+		playersInfo.push({
+			id: player.getId(),
+			name: player.getName(),
+			money: player.getMoney()
+		});
+	}
+	playersInfo.sort(function(a, b){
+		return b.money - a.money;
+	});
+
+	this.broadcast('gameOver', {
+		playersRank: playersInfo
+	});
+
 	this.onGameClosedCallback.call(this);
 };

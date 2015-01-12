@@ -138,3 +138,6 @@ Player.prototype.addMoney = function(deltaMoney, callback){ /*callback(newTotalM
 	this.moneyTotal += deltaMoney;
 	callback(this.moneyTotal);
 };
+Player.prototype.getMoney = function(){
+	return this.moneyTotal;
+};

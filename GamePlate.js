@@ -80,8 +80,8 @@ GamePlate.prototype.pickItem = function(rowIndex, colIndex, callback){ /*callbac
 			ret = {type: 'empty', value: null};
 			break;
 
-		//case context.Id.Plate.Money.LEVEL1:
-		//case context.Id.Plate.Money.LEVEL2:
+		case context.Id.Plate.Money.LEVEL1:
+		case context.Id.Plate.Money.LEVEL2:
 		case context.Id.Plate.Money.LEVEL3:
 			ret = {type: 'money', value: item};
 			break;
