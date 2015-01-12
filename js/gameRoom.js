@@ -3,7 +3,6 @@ var GameRoom = function(roominfo){
     this.map = new GameMap();
     //this.toolbox = new ToolBox();
     this.player = [];
-    
 };
 
 GameRoom.prototype.createPlayer = function(id, x, y, pointer, color, direction, order){

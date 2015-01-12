@@ -7,31 +7,33 @@
     <link rel="stylesheet" type="text/css" href="less/skeleton.css">
     <link rel="stylesheet" type="text/less" href="./less/index.less">
     <link rel="stylesheet" type="text/less" href="./less/tool.less">
-    <link rel="stylesheet" type="text/less" href="./less/color.less">
-    <link rel="stylesheet" href="./lib/codemirror/codemirror.css">
-
-    <link rel="stylesheet" type="text/less" href="./less/game.less">
-
+    <link rel="stylesheet" href="./lib/codemirror/lib/codemirror.css">
+    <link rel="stylesheet" href="./lib/codemirror/theme/neo.css">
     <!--    <script data-main="js/main" src="lib/requirejs/require.js"></script>-->
 
 </head>
 
 <body id="login-body">
     <div class="row">
-        <div class="one-third columns">&nbsp;</div>
-        <div class="one-third columns">
-            <div class="login center lightblue">
+        <div class="four columns">&nbsp;</div>
+        <div class="four columns">
+            <div class="login center">
+                <div>
+                    <h2>Play & Learn & Code</h2>
+                    <h4>a ideal game to learn coding.</h4>
+                
+                </div>
                 <div class="row">
-                    <label for="id">Name</label>
-                    <input type="text" id="id">
+                    <label for="id"><h4>名字</h4></label>
+                    <input type="text" id="id" placeholder="Enter your nickname">
                 </div>
                 <div class="row center">
-                    <button class="green" id="login">Login</button>
+                    <button id="login">Login</button>
                 </div>
             </div>
 
         </div>
-        <div class="one-third columns"></div>
+        <div class="four columns">&nbsp;</div>
     </div>
     <script src="lib/underscore/underscore.js"></script>
     <script src="lib/mustache/mustache.js"></script>

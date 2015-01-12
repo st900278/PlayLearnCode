@@ -1,6 +1,4 @@
 var game = new Game();
-var x = 10;
-var roomInterval, userInterval;
 
 var roomTemplate = '<div class="row">{{name}}</div>\
             <div class="row">\
@@ -32,7 +30,6 @@ var playerTemplate = '<div class="player" id={{id}} style="background:{{color}}"
                         目前錢幣: \
                         <span class="money">0</span>\
                     </div>\
-                    <div>目前順序: <span class="order">{{order}}</span>\
                     <div>目前方向: <span class="direction">{{direction}}</span>\
                     </div>\
                 </div>';
@@ -56,14 +53,6 @@ var loadScript = function (url, element) {
     element.appendChild(js);
 };
 
-var sleep = function (milliseconds) {
-    var start = new Date().getTime();
-    for (var i = 0; i < 1e7; i++) {
-        if ((new Date().getTime() - start) > milliseconds) {
-            break;
-        }
-    }
-}
 
 document.querySelector("#login").addEventListener('click', function () {
     var id = document.getElementById("id");
@@ -79,11 +68,14 @@ var inRoom = function () {
 
     game.socket.init(function (data) {
         game.self.name = data['userName'];
-        document.getElementById("user-name").innerHTML = game.self.name;
         game.self.logintime = data['loginTime'];
-        document.getElementById("login-time").innerHTML = game.self.logintime;
         game.self.color = data['color'];
         game.self.id = data['id'];
+
+
+        document.getElementById("user-name").innerHTML = game.self.name;
+        document.getElementById("login-time").innerHTML = game.self.logintime;
+
 
         data['players'].forEach(function (element, index, array) {
             game.nowUser.push(element);
@@ -154,8 +146,11 @@ var inGame = function () {
     loadScript("./js/player.js");
     loadScript("./js/gameMap.js");
     loadScript("./js/toolbox.js");
-    loadScript("./lib/codemirror/codemirror.js");
-    loadScript("./lib/codemirror/javascript.js");
+    loadScript("./lib/codemirror/lib/codemirror.js");
+
+    loadScript("./lib/codemirror/addon/edit/closeBrackets.js");
+    loadScript("./lib/codemirror/addon/edit/matchBrackets.js");
+    loadScript("./lib/codemirror/mode/javascript.js");
     loadScript("./js/gameRoom.js");
     loadScript("./js/gameScript.js");
 
@@ -175,12 +170,12 @@ var inGame = function () {
     }
     game.socket.getRoomUser(function (data) {
         if (data.players.length > 0) {
-
             data.players.forEach(function (el, idx) {
                 game.nowPlayer.push(el);
                 for (var i = 0; i < nowStatus.length; i++) {
                     if (nowStatus[i] == 0) {
                         nowStatus[i] = 1;
+                        console.log(el);
                         document.querySelector('div.row[data-target="' + (i + 1) + '"]').innerHTML = Mustache.render(playerTemplate, el);
                         break;
                     }
@@ -202,6 +197,19 @@ var inGame = function () {
     game.socket.gameStart(function (data) {
 
         game.gameRoom = new GameRoom(game.self.room);
+
+        game.gameRoom.editor = CodeMirror.fromTextArea(document.querySelector(".coding-plain"), {
+            mode: {
+                name: "javascript",
+                globalVars: true
+            },
+            lineNumbers: true,
+            autoCloseBrackets: true,
+            matchBrackets: true,
+            theme: "neo"
+        });
+
+
         for (var i = 0; i < game.gameRoom.roominfo.playerRequire; i++) event[i] = "";
         var plate = data.plate;
         var ring = data.ring;
@@ -213,7 +221,6 @@ var inGame = function () {
             for (var j = 0; j < game.nowPlayer.length; j++) {
                 if (playerData[i].id == game.nowPlayer[j].id) {
                     game.gameRoom.createPlayer(playerData[i].id, playerData[i].x, playerData[i].y, playerData[i].directRingPointer, game.nowPlayer[j].color, playerData[i].direction, i + 1);
-                    setOrder(playerData[i].id, i + 1);
                 }
             }
         }
@@ -238,9 +245,6 @@ var inGame = function () {
 };
 
 
-var setOrder = function (id, neworder) {
-    document.getElementById(id).querySelector("span.order").innerHTML = neworder;
-};
 var setMoney = function (id, newmoney) {
     document.getElementById(id).querySelector("span.money").innerHTML = newmoney;
 };
@@ -248,7 +252,7 @@ var setMoney = function (id, newmoney) {
 
 
 var event1 = [];
-for(var i=0;i<4;i++)event1[i] = "";
+for (var i = 0; i < 4; i++) event1[i] = "";
 var actionHandler = function (data) {
     var id = data.id;
     var player = game.gameRoom.getPlayer(id);
@@ -276,32 +280,70 @@ var actionHandler = function (data) {
                     switch (action[1]) {
                     case "step":
                         switch (action[2]) {
-                            case "pointer":
-                                if (action[3] == "clock") {
-                                    game.gameRoom.map.removePlayerRing(recentPlayer);
-                                    recentPlayer.pointer = (recentPlayer.pointer + 1) % (game.gameRoom.roominfo.gamePlateSize * 4);
-                                    game.gameRoom.map.setPlayerRing(recentPlayer);
+                        case "pointer":
+                            if (action[3] == "clock") {
+                                game.gameRoom.map.removePlayerRing(recentPlayer);
+                                recentPlayer.pointer = (recentPlayer.pointer + 1) % (game.gameRoom.roominfo.gamePlateSize * 4);
+                                game.gameRoom.map.setPlayerRing(recentPlayer);
 
 
-                                } else if (action[3] == "counterClock") {
-                                    game.gameRoom.map.removePlayerRing(recentPlayer);
-                                    recentPlayer.pointer = (recentPlayer.pointer + game.gameRoom.roominfo.gamePlateSize * 4 - 1) % (game.gameRoom.roominfo.gamePlateSize * 4);
-                                    game.gameRoom.map.setPlayerRing(recentPlayer);
-                                }
-                                break;
-                            case "setArrow":
-                                recentPlayer.direction = game.gameRoom.map.ring[recentPlayer.pointer];
-                                break;
-                            case "next":
-                                if (recentPlayer.direction == "directUp") game.gameRoom.map.moveUp(recentPlayer);
-                                if (recentPlayer.direction == "directDown") game.gameRoom.map.moveDown(recentPlayer);
-                                if (recentPlayer.direction == "directRight") game.gameRoom.map.moveRight(recentPlayer);
-                                if (recentPlayer.direction == "directLeft") game.gameRoom.map.moveLeft(recentPlayer);
-                                if (recentPlayer.direction == "directRightUp") game.gameRoom.map.moveRightUp(recentPlayer);
-                                if (recentPlayer.direction == "directRightDown") game.gameRoom.map.moveRightDown(recentPlayer);
-                                if (recentPlayer.direction == "directLeftUp") game.gameRoom.map.moveLeftUp(recentPlayer);
-                                if (recentPlayer.direction == "directLeftDown") game.gameRoom.map.moveLeftDown(recentPlayer);
-                                break;
+                            } else if (action[3] == "counterClock") {
+                                game.gameRoom.map.removePlayerRing(recentPlayer);
+                                recentPlayer.pointer = (recentPlayer.pointer + game.gameRoom.roominfo.gamePlateSize * 4 - 1) % (game.gameRoom.roominfo.gamePlateSize * 4);
+                                game.gameRoom.map.setPlayerRing(recentPlayer);
+                            }
+                            break;
+                        case "setArrow":
+                            recentPlayer.direction = game.gameRoom.map.ring[recentPlayer.pointer];
+                            break;
+                        case "next":
+                                console.log(recentPlayer);
+                            if (recentPlayer.direction == "directUp"){
+                                
+                                game.gameRoom.map.moveUp(recentPlayer);
+                                recentPlayer.y -= 1;
+                            }
+                            if (recentPlayer.direction == "directDown"){
+                                
+                                game.gameRoom.map.moveDown(recentPlayer);
+                                recentPlayer.y += 1;
+                            }
+                            if (recentPlayer.direction == "directRight"){
+                                
+                                game.gameRoom.map.moveRight(recentPlayer);
+                                recentPlayer.x +=1;
+                            }
+                            if (recentPlayer.direction == "directLeft"){
+                                
+                                game.gameRoom.map.moveLeft(recentPlayer);
+                                recentPlayer.x -= 1;
+                            }
+                            if (recentPlayer.direction == "directRightUp"){
+                                
+                                game.gameRoom.map.moveRightUp(recentPlayer);
+                                recentPlayer.x += 1;
+                                recentPlayer.y -= 1;
+                            }
+                            if (recentPlayer.direction == "directRightDown"){
+                                
+                                game.gameRoom.map.moveRightDown(recentPlayer);
+                                recentPlayer.x += 1;
+                                recentPlayer.y += 1;
+                            }
+                            if (recentPlayer.direction == "directLeftUp"){
+                                
+                                game.gameRoom.map.moveLeftUp(recentPlayer);
+                                recentPlayer.x -= 1;
+                                recentPlayer.y -= 1;
+                            }
+                            if (recentPlayer.direction == "directLeftDown"){
+                                
+                                game.gameRoom.map.moveLeftDown(recentPlayer);
+                                recentPlayer.x -= 1;
+                                recentPlayer.y += 1;
+                            }
+                                console.log(recentPlayer);
+                            break;
                         }
 
                         break;
@@ -309,22 +351,25 @@ var actionHandler = function (data) {
                         switch (action[2]) {
                         case "pick":
                             console.log(data[i].data.money);
+                            console.log(game.gameRoom.map.plate);
+                            console.log(recentPlayer);
                             console.log(game.gameRoom.map.plate[recentPlayer.y][recentPlayer.x]);
                             setMoney(recentPlayer.id, data[i].data.money);
                             game.gameRoom.map.plate[recentPlayer.y][recentPlayer.x] = "empty";
                             game.gameRoom.map.drawMap();
+                            console.log(game.gameRoom.map.plate[recentPlayer.y][recentPlayer.x]);
                         }
                     }
-                                                
-                break;
+
+                    break;
                 }
-                
+
             }
-            
-            
-            
+
+
+
         }
-        for(var i = 0;i<4;i++){
+        for (var i = 0; i < 4; i++) {
             event1[i] = "";
         };
         game.socket.actionComplete();

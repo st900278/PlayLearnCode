@@ -1,5 +1,5 @@
 var Game = function () {
-    this.socket = new GameSocket("http://172.20.185.166:4455");
+    this.socket = new GameSocket("http://192.168.98.129:4455");
 
     this.self = {};
     this.nowUser = [];

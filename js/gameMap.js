@@ -231,13 +231,12 @@ GameMap.prototype.removePlayerRing = function(player){
 GameMap.prototype.moveObject = function (player, location) {
     var ctx = this.ctx;
     var that = this;
-    var tmp = player;
-    //console.log(player);
-    //console.log(location);
+    var tmp = {};
+    tmp.x = player.x;
+    tmp.y = player.y;
     var vx = (location.x - tmp.x) / 100;
     var vy = (location.y - tmp.y) / 100;
-    //console.log("vx" + vx);
-    //ßconsole.log(vy);
+    
     var count = 0;
  
     var drawInterval = setInterval(function () {
