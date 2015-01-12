@@ -36,3 +36,8 @@ body#room-body div.user-info {
   padding: 10px;
   color: white;
 }
+body#room-body div.users {
+  margin: 10px;
+  padding: 10px;
+  color: white;
+}

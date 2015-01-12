@@ -1,6 +1,7 @@
 document.getElementById("send").addEventListener('click', function () {
     document.querySelector(".coding-plain").disabled = true;
-    game.socket.sendSubmit(self.id, document.querySelector(".coding-plain").value);
+    document.getElementById("send").disabled = true;
+    game.socket.sendSubmit(game.self.id, document.querySelector(".coding-plain").value);
 });
 
 $("textarea").keydown(function (e) {

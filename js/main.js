@@ -2,13 +2,6 @@ var game = new Game();
 var x = 10;
 var roomInterval, userInterval;
 
-var self = {};
-var nowUser = [];
-var nowRoom = [];
-var nowPlayer = [];
-var gameRoom;
-
-
 var roomTemplate = '<div class="row">{{name}}</div>\
             <div class="row">\
                 <div class="two columns">\
@@ -85,20 +78,20 @@ var inRoom = function () {
 
 
     game.socket.init(function (data) {
-        self.name = data['userName'];
-        document.getElementById("user-name").innerHTML = self.name;
-        self.logintime = data['loginTime'];
-        document.getElementById("login-time").innerHTML = self.logintime;
-        self.color = data['color'];
-        self.id = data['id'];
+        game.self.name = data['userName'];
+        document.getElementById("user-name").innerHTML = game.self.name;
+        game.self.logintime = data['loginTime'];
+        document.getElementById("login-time").innerHTML = game.self.logintime;
+        game.self.color = data['color'];
+        game.self.id = data['id'];
 
         data['players'].forEach(function (element, index, array) {
-            nowUser.push(element);
+            game.nowUser.push(element);
             document.querySelector("div.users").innerHTML = document.querySelector("div.users").innerHTML + Mustache.render(userTemplate, element);
         });
 
         data['rooms'].forEach(function (element, index, array) {
-            nowRoom.push(element);
+            game.nowRoom.push(element);
             var addRoom = document.getElementById("addRoom");
             var room = document.createElement("div");
             room.id = element['id'];
@@ -107,24 +100,24 @@ var inRoom = function () {
             document.querySelector(".room-list").insertBefore(room, addRoom);
         });
 
-        game.socket.listenAddUser(self.id, function (data) {
-            nowUser.push(data);
+        game.socket.listenAddUser(game.self.id, function (data) {
+            game.nowUser.push(data);
             document.querySelector("div.users").innerHTML = document.querySelector("div.users").innerHTML + Mustache.render(userTemplate, data);
         });
 
         game.socket.listenRemoveUser(function (data) {
             var tmp = [];
-            nowUser.forEach(function (element, index, array) {
+            game.nowUser.forEach(function (element, index, array) {
                 if (element['id'] != data) {
                     tmp.push(element);
                 }
             });
-            nowUser = tmp;
+            game.nowUser = tmp;
             document.querySelector("div.users").removeChild(document.getElementById(data));
         });
 
         game.socket.listenAddRoom(function (data) {
-            nowRoom.push(data);
+            game.nowRoom.push(data);
             var addRoom = document.getElementById("addRoom");
             var room = document.createElement("div");
             room.id = data['id'];
@@ -134,9 +127,9 @@ var inRoom = function () {
         });
 
         game.socket.listenModifyRoom(function (data) {
-            for (var i = 0; i < nowRoom.length; i++) {
-                if (nowRoom[i]['id'] == data['id']) {
-                    nowRoom[i] = data;
+            for (var i = 0; i < game.nowRoom.length; i++) {
+                if (game.nowRoom[i]['id'] == data['id']) {
+                    game.nowRoom[i] = data;
                     break;
                 }
             }
@@ -152,8 +145,8 @@ var inRoom = function () {
 
 
 var inGame = function () {
-    for (var i = 0; i < nowRoom.length; i++) {
-        if (nowRoom[i].id == self.roomId) self.room = nowRoom[i];
+    for (var i = 0; i < game.nowRoom.length; i++) {
+        if (game.nowRoom[i].id == game.self.roomId) game.self.room = game.nowRoom[i];
     }
     var nowStatus = [1];
     document.body.innerHTML = loadPage("../../game.html");
@@ -166,15 +159,15 @@ var inGame = function () {
     loadScript("./js/gameRoom.js");
     loadScript("./js/gameScript.js");
 
-    for (var i = 1; i <= self.room.playerRequire; i++) {
+    for (var i = 1; i <= game.self.room.playerRequire; i++) {
         var playerTag = document.createElement("div");
         playerTag.className = "row";
         playerTag.setAttribute("data-target", i.toString());
         document.querySelector(".player-info").appendChild(playerTag);
     }
-    nowPlayer.push(self);
-    document.querySelector('div.row[data-target="1"]').innerHTML = Mustache.render(playerTemplate, self);
-    for (var i = 1; i < self.room.playerRequire; i++) {
+    game.nowPlayer.push(game.self);
+    document.querySelector('div.row[data-target="1"]').innerHTML = Mustache.render(playerTemplate, game.self);
+    for (var i = 1; i < game.self.room.playerRequire; i++) {
         document.querySelector('div.row[data-target="' + (i + 1) + '"]').innerHTML = Mustache.render(playerTemplate, {
             color: "#d3d3d3",
         });
@@ -184,40 +177,42 @@ var inGame = function () {
         if (data.players.length > 0) {
 
             data.players.forEach(function (el, idx) {
-                nowPlayer.push(el);
+                game.nowPlayer.push(el);
                 for (var i = 0; i < nowStatus.length; i++) {
                     if (nowStatus[i] == 0) {
                         nowStatus[i] = 1;
                         document.querySelector('div.row[data-target="' + (i + 1) + '"]').innerHTML = Mustache.render(playerTemplate, el);
+                        break;
                     }
                 }
             });
         }
     });
     game.socket.addRoomUser(function (data) {
-        nowPlayer.push(data);
+        game.nowPlayer.push(data);
         for (var i = 0; i < nowStatus.length; i++) {
             if (nowStatus[i] == 0) {
                 nowStatus[i] = 1;
                 document.querySelector('div.row[data-target="' + (i + 1) + '"]').innerHTML = Mustache.render(playerTemplate, data);
+                break;
             }
         }
     });
 
     game.socket.gameStart(function (data) {
 
-        gameRoom = new GameRoom(self.room);
-        for (var i = 0; i < gameRoom.roominfo.playerRequire; i++) event[i] = "";
+        game.gameRoom = new GameRoom(game.self.room);
+        for (var i = 0; i < game.gameRoom.roominfo.playerRequire; i++) event[i] = "";
         var plate = data.plate;
         var ring = data.ring;
         var playerData = data.playerPositions;
 
-        gameRoom.map.init(plate, ring);
+        game.gameRoom.map.init(plate, ring);
 
         for (var i = 0; i < playerData.length; i++) {
-            for (var j = 0; j < nowPlayer.length; j++) {
-                if (playerData[i].id == nowPlayer[j].id) {
-                    gameRoom.createPlayer(playerData[i].id, playerData[i].x, playerData[i].y, playerData[i].directRingPointer, nowPlayer[j].color, playerData[i].direction, i + 1);
+            for (var j = 0; j < game.nowPlayer.length; j++) {
+                if (playerData[i].id == game.nowPlayer[j].id) {
+                    game.gameRoom.createPlayer(playerData[i].id, playerData[i].x, playerData[i].y, playerData[i].directRingPointer, game.nowPlayer[j].color, playerData[i].direction, i + 1);
                     setOrder(playerData[i].id, i + 1);
                 }
             }
@@ -225,15 +220,18 @@ var inGame = function () {
 
         game.socket.timerStart(function () {
             document.querySelector(".coding-plain").disabled = false;
+            document.getElementById("send").disabled = false;
         });
 
         game.socket.timerStop(function () {
+            document.getElementById("send").disabled = true;
             document.querySelector(".coding-plain").disabled = true;
-            game.socket.sendSubmit(self.id, document.querySelector(".coding-plain").value);
+            game.socket.sendSubmit(game.self.id, document.querySelector(".coding-plain").value);
         });
         game.socket.action(function (data) {
             actionHandler(data);
         });
+        game.socket.gameOver();
     });
 
 
@@ -249,27 +247,28 @@ var setMoney = function (id, newmoney) {
 
 
 
-var event = [];
+var event1 = [];
+for(var i=0;i<4;i++)event1[i] = "";
 var actionHandler = function (data) {
     var id = data.id;
-    var player = gameRoom.getPlayer(id);
+    var player = game.gameRoom.getPlayer(id);
     //console.log(data);
-    event[player.order - 1] = {
+    event1[player.order - 1] = {
         player: player,
         data: data.action
     };
 
     var flag = 0;
-    for (var i = 0; i < gameRoom.roominfo.playerRequire; i++) {
-        if (event[i] == "")
+    for (var i = 0; i < game.gameRoom.roominfo.playerRequire; i++) {
+        if (event1[i] == "")
             flag = 1;
     }
     if (flag == 0) {
-        for (var j = 0; j < gameRoom.roominfo.playerRequire; j++) {
+        for (var j = 0; j < game.gameRoom.roominfo.playerRequire; j++) {
 
-            var recentPlayer = event[j].player;
-            var data = event[j].data;
-
+            var recentPlayer = event1[j].player;
+            var data = event1[j].data;
+            console.log(data);
             for (var i = 0; i < data.length; i++) {
                 var action = data[i].msg.split(".");
                 switch (action[0]) {
@@ -279,34 +278,29 @@ var actionHandler = function (data) {
                         switch (action[2]) {
                             case "pointer":
                                 if (action[3] == "clock") {
-                                    console.log("test");
-                                    console.log(recentPlayer);
-                                    gameRoom.map.removePlayerRing(recentPlayer);
-                                    recentPlayer.pointer = (recentPlayer.pointer + 1) % (gameRoom.roominfo.gamePlateSize * 4);
-                                    gameRoom.map.setPlayerRing(recentPlayer);
+                                    game.gameRoom.map.removePlayerRing(recentPlayer);
+                                    recentPlayer.pointer = (recentPlayer.pointer + 1) % (game.gameRoom.roominfo.gamePlateSize * 4);
+                                    game.gameRoom.map.setPlayerRing(recentPlayer);
 
 
                                 } else if (action[3] == "counterClock") {
-                                    gameRoom.map.removePlayerRing(recentPlayer);
-                                    recentPlayer.pointer = (recentPlayer.pointer + gameRoom.roominfo.gamePlateSize * 4 - 1) % (gameRoom.roominfo.gamePlateSize * 4);
-                                    gameRoom.map.setPlayerRing(recentPlayer);
+                                    game.gameRoom.map.removePlayerRing(recentPlayer);
+                                    recentPlayer.pointer = (recentPlayer.pointer + game.gameRoom.roominfo.gamePlateSize * 4 - 1) % (game.gameRoom.roominfo.gamePlateSize * 4);
+                                    game.gameRoom.map.setPlayerRing(recentPlayer);
                                 }
                                 break;
                             case "setArrow":
-                                console.log(recentPlayer.direction);
-                                recentPlayer.direction = gameRoom.map.ring[recentPlayer.pointer];
-                                console.log(recentPlayer.direction);
+                                recentPlayer.direction = game.gameRoom.map.ring[recentPlayer.pointer];
                                 break;
                             case "next":
-                                console.log(recentPlayer.direction);
-                                if (recentPlayer.direction == "directUp") gameRoom.map.moveUp(recentPlayer);
-                                if (recentPlayer.direction == "directDown") gameRoom.map.moveDown(recentPlayer);
-                                if (recentPlayer.direction == "directRight") gameRoom.map.moveRight(recentPlayer);
-                                if (recentPlayer.direction == "directLeft") gameRoom.map.moveLeft(recentPlayer);
-                                if (recentPlayer.direction == "directRightUp") gameRoom.map.moveRightUp(recentPlayer);
-                                if (recentPlayer.direction == "directRightDown") gameRoom.map.moveRightDown(recentPlayer);
-                                if (recentPlayer.direction == "directLeftUp") gameRoom.map.moveLeftUp(recentPlayer);
-                                if (recentPlayer.direction == "directLeftDown") gameRoom.map.moveLeftDown(recentPlayer);
+                                if (recentPlayer.direction == "directUp") game.gameRoom.map.moveUp(recentPlayer);
+                                if (recentPlayer.direction == "directDown") game.gameRoom.map.moveDown(recentPlayer);
+                                if (recentPlayer.direction == "directRight") game.gameRoom.map.moveRight(recentPlayer);
+                                if (recentPlayer.direction == "directLeft") game.gameRoom.map.moveLeft(recentPlayer);
+                                if (recentPlayer.direction == "directRightUp") game.gameRoom.map.moveRightUp(recentPlayer);
+                                if (recentPlayer.direction == "directRightDown") game.gameRoom.map.moveRightDown(recentPlayer);
+                                if (recentPlayer.direction == "directLeftUp") game.gameRoom.map.moveLeftUp(recentPlayer);
+                                if (recentPlayer.direction == "directLeftDown") game.gameRoom.map.moveLeftDown(recentPlayer);
                                 break;
                         }
 
@@ -315,8 +309,10 @@ var actionHandler = function (data) {
                         switch (action[2]) {
                         case "pick":
                             console.log(data[i].data.money);
-                            gameRoom.map.plate[recentPlayer.y][recentPlayer.x] = "empty";
-                            gameRoom.map.drawMap();
+                            console.log(game.gameRoom.map.plate[recentPlayer.y][recentPlayer.x]);
+                            setMoney(recentPlayer.id, data[i].data.money);
+                            game.gameRoom.map.plate[recentPlayer.y][recentPlayer.x] = "empty";
+                            game.gameRoom.map.drawMap();
                         }
                     }
                                                 
@@ -329,7 +325,7 @@ var actionHandler = function (data) {
             
         }
         for(var i = 0;i<4;i++){
-            event[i] = "";
+            event1[i] = "";
         };
         game.socket.actionComplete();
     }

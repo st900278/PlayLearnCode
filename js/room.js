@@ -1,25 +1,22 @@
-document.getElementById("addRoom").addEventListener('mousedown', function () {
-    this.style.background = lightenDarkenColor("#92d282", 30);
-});
-document.getElementById("addRoom").addEventListener('mouseup', function () {
-    this.style.background = "#92d282";
-});
-document.getElementById("addRoom").addEventListener('click', function () {
+document.getElementById("addRoomBtn").addEventListener('click', function () {
+    var roomtag = document.getElementById("addRoom");
     var room = {
-        roomName: "meow",
-        playerRequire: 2,
+        roomName: roomtag.querySelector(".roomName").value,
+        playerRequire: roomtag.querySelector(".roomPlayerRequire").value,
         gamePlateSize: 8,
-        stageNum: 5,
-        gameType: 'DEFAULT'
+        stageNum: roomtag.querySelector(".roomStage").value,
+        gameType: 'DEFAULT',
+        timeLimit: roomtag.querySelector(".roomTimeLimit").value,
+        stepLimit: roomtag.querySelector(".roomStepLimit").value
     };
-    nowRoom.push(room);
+    game.nowRoom.push(room);
     game.socket.addRoom(room, inGame);
 });
 
 document.querySelector("body").addEventListener('click', function (e) {
     if (e.target.className == "enter") {
-        self.roomId = e.target.parentNode.parentNode.parentNode.id;
-        game.socket.joinRoom(self.id, self.roomId, function () {
+        game.self.roomId = e.target.parentNode.parentNode.parentNode.id;
+        game.socket.joinRoom(game.self.id, game.self.roomId, function () {
             inGame();
         });
     }

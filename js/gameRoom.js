@@ -15,11 +15,8 @@ GameRoom.prototype.createPlayer = function(id, x, y, pointer, color, direction, 
 
     
 GameRoom.prototype.getPlayer = function(id){
-    console.log(this.player);
-    
     for(var i=0;i<this.player.length;i++){
         if(this.player[i].id == id){
-            console.log("get id");
             return this.player[i];
         }
     }

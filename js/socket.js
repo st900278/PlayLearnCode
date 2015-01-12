@@ -95,6 +95,12 @@ GameSocket.prototype.timerStop = function (callback) {
     });
 };
 
+GameSocket.prototype.gameOver = function(callback){
+    this.socket.on("gameOver", function(data){
+       console.log(data);
+    });
+};
+
 GameSocket.prototype.sendSubmit = function (id, code) {
     this.socket.emit('codeSubmit', {
         id: id,

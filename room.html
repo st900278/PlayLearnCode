@@ -1,8 +1,37 @@
 <div class="row">
     <div class="room-list eight columns">
-        <div class="room" id="addRoom">新增房間</div>
+        <div class="room" id="addRoom">
+            房間名:
+            <input type="text" class="roomName" maxlength="10" size="10">
+            人數限制:
+            <select class="roomPlayerRequire">
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+            </select>
+            回合數
+            <select class="roomStage">
+                <option value="5">5回合</option>
+                <option value="7">7回合</option>
+                <option value="10">10回合</option>
+            </select>
+            時間限制:
+            <select class="roomTimeLimit">
+                <option value="3">3分鐘</option>
+                <option value="5">5分鐘</option>
+                <option value="7">7分鐘</option>
+            </select>
+            步數限制:
+            <select class="roomStepLimit">
+                <option value="3">3步</option>
+                <option value="4">4步</option>
+                <option value="5">5步</option>
+            </select>
+
+            <button id="addRoomBtn">新增房間</button>
+        </div>
     </div>
-    
+
     <div class="user four columns">
         <div class="user-info box brown-bg">
             <div>暱稱: <span id="user-name"></span>
@@ -13,6 +42,7 @@
         </div>
 
         <div class="users box brown-bg">
+            其他玩家
         </div>
     </div>
 </div>
