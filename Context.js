@@ -40,6 +40,8 @@ function Context(){
 
 	this.GAME_SOCKET_ID = 'conopoly_ipc_server';
 
+	this.IPC_FILE_PATH_PREFIX = '/tmp/conopoly_ipc_file';
+
 	this.HOT_COLORS = [
 		'#49ff45',
 		'#df004c',
@@ -118,4 +120,17 @@ Context.prototype.recycleColor = function(color){
 		this.colorSelectedMap[color] = false;
 		console.log('Color ' + color + ' recycled');
 	}
+};
+
+//IPC Buffer utilities
+Context.prototype.readIPCBuffer = function(buffer){
+	var bufferStr = buffer.toString();
+	return JSON.parse(bufferStr.replace(/[\n\u0000]/g, ''));
+};
+Context.prototype.writeIPCBuffer = function(buffer, json){
+	var str = JSON.stringify(json);
+
+	buffer.fill('\u0000');
+	buffer.write(str);
+	buffer.sync();
 };

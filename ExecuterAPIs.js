@@ -1,27 +1,27 @@
 //var net = require('net');
-var ipc = require('node-ipc');
+var ipc = require('node-ipc'),
+	mmap = require('mmap'),
+	context = new (require('./Context').Context)();
 
 ipc.config.maxRetries = 0;
 ipc.config.silent = true;
 
-//var socket;
 var isConnected = false;
 var serverId = null;
-//var currentId = 'hello';
-
-//var CONNECT_TIMEOUT = 3000;
+var ipcBuffer;
 
 var stepCount = 0;
 var STEP_MAX = 3;
 
 exports.api = {
-	initGameIPCSocket: function(player_id, server_id, stepLimit){
+	initGameIPC: function(player_id, server_id, stepLimit, ipcFd, ipcBufferSize){
 		if(isConnected === true) return true;
 
 		ipc.config.id = player_id;
 		serverId = server_id;
 		STEP_MAX = stepLimit;
 
+		//Local socket ipc
 		ipc.connectTo(serverId, function(){
 			ipc.of[serverId].on('connect', function(){
 				/*
@@ -39,24 +39,22 @@ exports.api = {
 		});
 		//debugger;
 
+		//File map ipc
+		ipcBuffer = mmap.map(ipcBufferSize, mmap.PROT_READ, mmap.MAP_SHARED, ipcFd);
+
 		return true;
 	},
 
-	endIPC: function(gError){
+	endIPCSocket: function(gError){
 		ipc.of[serverId].emit('ipc.end', {
 			id: ipc.config.id,
 			err: gError
 		});
 	},
 
-	/*
-	destroyIPCSocket: function(){
-		if(isConnected === true){
-			ipc.disconnect(serverId);
-			isConnected = false;
-		}
+	destroyIPC: function(){
+		if(ipcBuffer instanceof Buffer) ipcBuffer.unmap();
 	},
-	*/
 
 	/*Public APIs*/
 
@@ -109,32 +107,36 @@ exports.api = {
 	},
 
 	/*TODO: Implement this function*/
-	/*
 	getMyPosition: function(){
-		var asyncDone = false,
-			myPosition = {
+		var myPosition = {
 				x: -1,
 				y: -1
 			};
 
-		ipc.of[serverId].on('msgAck.info', function(data){
-			if('player.position' in data){
-				if('x' in data['player.position'] && 'y' in data['player.position']){
-					myPosition.x = data['player.position']['x'];
-					myPosition.y = data['player.position']['y'];
-				}
+		var ipcJson = context.readIPCBuffer(ipcBuffer);
+		if(ipc.config.id in ipcJson){
+			var playerInfo = ipcJson[ipc.config.id];
+			if('x' in playerInfo && 'y' in playerInfo){
+				myPosition.x = playerInfo.x;
+				myPosition.y = playerInfo.y;
 			}
-			asyncDone = true;
-		});
-		ipc.of[serverId].emit('msg.info', {
-			id: ipc.config.id,
-			message: 'player.position'
-		});
+		}
 
-		while(!asyncDone){}
 		return myPosition;
 	},
-	*/
+	getMyDirection: function(){
+		var direction = 'directError';
+
+		var ipcJson = context.readIPCBuffer(ipcBuffer);
+		if(ipc.config.id in ipcJson){
+			var playerInfo = ipcJson[ipc.config.id];
+			if('direct' in playerInfo){
+				direction = playerInfo['direct'];
+			}
+		}
+
+		return direction.replace(/direct/g, '');
+	},
 
 	/*Tool part*/
 	MoveToolBoxLeft: function(){

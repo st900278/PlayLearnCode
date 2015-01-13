@@ -99,8 +99,11 @@ Player.prototype.moveDirectRingPointer = function(offset){
 Player.prototype.getCurrentDirection = function(){
 	return this.currentDirection;
 };
-Player.prototype.setCurrentDirection = function(direct){
+Player.prototype.setCurrentDirection = function(direct, callback){ //callback(newDirection)
 	this.currentDirection = direct;
+	if(callback !== undefined){
+		callback(this.currentDirection);
+	}
 };
 
 Player.prototype.putTool = function(tool, callback){ /*callback(err, toolIndex)*/

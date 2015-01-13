@@ -2,12 +2,16 @@ var GamePlate = require('./GamePlate').GamePlate,
 	//Player = require('./Player').Player,
 	Context = require('./Context').Context,
 	Executer = require('./Executer').Executer,
+	fs = require('fs'),
+	mmap = require('mmap'),
 	ipc = require('node-ipc'),
 	md5 = require('MD5');
 
 exports.Game = Game;
 
 var context = new Context();
+
+var PLAYER_IPC_BUFFER_QUOTA = 32 * 2;
 
 function Game(ioMain, roomName, initData){
     this.name = roomName;
@@ -27,7 +31,18 @@ function Game(ioMain, roomName, initData){
 	this.codingTimer = null;
 	this.submitCount = 0;
 	this.codeStorage = {};
-	this.codeExecuter = new Executer(context, this.id, 20 * 1000/*timeout: 20 seconds*/, this.stepLimit);
+
+	var ipcFilePath = context.IPC_FILE_PATH_PREFIX + '.' + this.id;
+	this.ipcFd = fs.openSync(ipcFilePath, 'w+');
+	this.ipcBuffer = mmap.map(PLAYER_IPC_BUFFER_QUOTA, mmap.PROT_READ | mmap.PROT_WRITE, mmap.MAP_SHARED, this.ipcFd);
+	context.writeIPCBuffer(this.ipcBuffer, {}); //init ipc buffer
+	var executerData = {
+		timeOut: 20 * 1000, //timeout: 20 seconds
+		stepLimit: this.stepLimit,
+		ipcFd: this.ipcFd
+	};
+
+	this.codeExecuter = new Executer(context, this.id, executerData);
 	this.executionBlocker = false;
 	this.currentOrderIndex = 0;
 	this.actionsBuffer = {};
@@ -56,6 +71,7 @@ Game.prototype.addPlayer = function(player){ //Add a new player into the room, r
 		});
 		this.players[player.getId()] = player;
 		this.playersOrder.push(player); //Default order
+		this.codeExecuter.setIPCBufferSize(this.playersOrder.length * PLAYER_IPC_BUFFER_QUOTA);
 		player.setRoom(this);
 		player.setPlateSize(this.plateSize);
 
@@ -83,19 +99,28 @@ Game.prototype.addPlayer = function(player){ //Add a new player into the room, r
 		console.log('Room ' + this.id + ' require player number ' + this.requirePlayerNum);
 		if(this.playersOrder.length >= this.requirePlayerNum){ //Game start
 
-			var playerPositions = [], p;
+			var playerPositions = [], p, pData;
+			var ipcJson = context.readIPCBuffer(this.ipcBuffer);
 			for(var i = 0; i < this.playersOrder.length; i++){
 				p = this.playersOrder[i];
 				p.moveDirectRingPointer(Math.floor( Math.random() * this.plateSize * 4 ));
-				playerPositions.push({
+				pData = {
 					id: p.getId(),
 					x: p.getPosition().x,
 					y: p.getPosition().y,
 
 					direction: p.getCurrentDirection(),
 					directRingPointer: p.getDirectRingPointer()
-				});
+				};
+				playerPositions.push(pData);
+
+				ipcJson[p.getId()] = {
+					x: pData.x,
+					y: pData.y,
+					direct: pData.direction
+				};
 			}
+			context.writeIPCBuffer(this.ipcBuffer, ipcJson);
 
 			thiz.ioMain.to(thiz.id).emit('gameStart', {
 				plate: plate,
@@ -279,7 +304,11 @@ var initCodeEngine = function(){
 
 								case 'setArrow':
 									var ring = thiz.gamePlate.getGamePlate().ring;
-									player.setCurrentDirection(ring[ player.getDirectRingPointer() ]);
+									player.setCurrentDirection(ring[ player.getDirectRingPointer() ], function(newDirect){
+										updatePlayerIPCBuffer.call(thiz, player.getId(), {
+											direction: newDirect
+										});
+									});
 									break;
 
 								case 'next':
@@ -292,6 +321,10 @@ var initCodeEngine = function(){
 												if(err !== null) throw err;
 												console.log('Player ' + player.getName() +
 															' new position: ' + nX + ', ' + nY);
+												updatePlayerIPCBuffer.call(thiz, player.getId(), {
+													x: nX,
+													y: nY
+												});
 											});
 											break;
 
@@ -300,6 +333,10 @@ var initCodeEngine = function(){
 												if(err !== null) throw err;
 												console.log('Player ' + player.getName() +
 															' new position: ' + nX + ', ' + nY);
+												updatePlayerIPCBuffer.call(thiz, player.getId(), {
+													x: nX,
+													y: nY
+												});
 											});
 											break;
 
@@ -308,6 +345,10 @@ var initCodeEngine = function(){
 												if(err !== null) throw err;
 												console.log('Player ' + player.getName() +
 															' new position: ' + nX + ', ' + nY);
+												updatePlayerIPCBuffer.call(thiz, player.getId(), {
+													x: nX,
+													y: nY
+												});
 											});
 											break;
 
@@ -316,6 +357,10 @@ var initCodeEngine = function(){
 												if(err !== null) throw err;
 												console.log('Player ' + player.getName() +
 															' new position: ' + nX + ', ' + nY);
+												updatePlayerIPCBuffer.call(thiz, player.getId(), {
+													x: nX,
+													y: nY
+												});
 											});
 											break;
 
@@ -324,6 +369,10 @@ var initCodeEngine = function(){
 												if(err !== null) throw err;
 												console.log('Player ' + player.getName() +
 															' new position: ' + nX + ', ' + nY);
+												updatePlayerIPCBuffer.call(thiz, player.getId(), {
+													x: nX,
+													y: nY
+												});
 											});
 											break;
 
@@ -332,6 +381,10 @@ var initCodeEngine = function(){
 												if(err !== null) throw err;
 												console.log('Player ' + player.getName() +
 															' new position: ' + nX + ', ' + nY);
+												updatePlayerIPCBuffer.call(thiz, player.getId(), {
+													x: nX,
+													y: nY
+												});
 											});
 											break;
 
@@ -340,6 +393,10 @@ var initCodeEngine = function(){
 												if(err !== null) throw err;
 												console.log('Player ' + player.getName() +
 															' new position: ' + nX + ', ' + nY);
+												updatePlayerIPCBuffer.call(thiz, player.getId(), {
+													x: nX,
+													y: nY
+												});
 											});
 											break;
 
@@ -348,6 +405,10 @@ var initCodeEngine = function(){
 												if(err !== null) throw err;
 												console.log('Player ' + player.getName() +
 															' new position: ' + nX + ', ' + nY);
+												updatePlayerIPCBuffer.call(thiz, player.getId(), {
+													x: nX,
+													y: nY
+												});
 											});
 											break;
 
@@ -560,6 +621,24 @@ Game.prototype.onTimeoutCallback = function(id){
 	executeCodes.call(this);
 };
 
+var updatePlayerIPCBuffer = function(id, data){
+	var ipcJson = context.readIPCBuffer(this.ipcBuffer);
+	if(id in ipcJson){
+		var player = ipcJson[id];
+
+		if('x' in data && 'y' in data){
+			player.x = data['x'];
+			player.y = data['y'];
+		}
+
+		if('direction' in data){
+			player.direct = data['direction'];
+		}
+
+		context.writeIPCBuffer(this.ipcBuffer, ipcJson);
+	}
+};
+
 var gameEndCallback = function(){
 	console.log('Game over');
 
@@ -579,6 +658,9 @@ var gameEndCallback = function(){
 	this.broadcast('gameOver', {
 		playersRank: playersInfo
 	});
+
+	this.ipcBuffer.unmap();
+	fs.closeSync(this.ipcFd);
 
 	this.onGameClosedCallback.call(this);
 };

@@ -2,7 +2,7 @@ var SandBox = require('sandcastle').SandCastle;
 
 var prefixCode1 = "exports.main = function(){ \
 					\nvar gError = null; \
-					\nif( initGameIPCSocket(\'",
+					\nif( initGameIPC(\'",
 	prefixCode2 = ") !== true ){ throw new Error(\'Init socket to game failed\'); } \
 					\
 					\ntry{\
@@ -13,17 +13,20 @@ var prefixCode1 = "exports.main = function(){ \
 					\n}catch(execErr){ \
 						\ngError = \'Code exception: \' + execErr.message; \
 					\n} \
-					\nendIPC(gError);\
+					\ndestroyIPC(); \
+					\nendIPCSocket(gError);\
 					\nexit(null); \
 				\n};";
 
 var context;
 
-var Executer = function(ctx, roomId, timeOut, stepLimit){
+var Executer = function(ctx, roomId, initData){
 	context = ctx;
     this.roomId = roomId;
-	this.timeOutMs = timeOut;
-	this.stepLimit = stepLimit;
+	this.timeOutMs = ('timeOut' in initData)? parseInt(initData['timeOut']) : 60 * 1000;
+	this.stepLimit = ('stepLimit' in initData)? parseInt(initData['stepLimit']) : 5;
+	this.ipcFd = ('ipcFd' in initData)? parseInt(initData['ipcFd']) : -1;
+	this.ipcBufferSize = ('ipcBufferSize' in initData)? parseInt(initData['ipcBufferSize']) : 500;
 
 	this.sandBox = new SandBox({
 		api: './ExecuterAPIs.js',
@@ -31,12 +34,16 @@ var Executer = function(ctx, roomId, timeOut, stepLimit){
 		timeout: this.timeOutMs
 	});
 };
+Executer.prototype.setIPCBufferSize = function(size){
+	this.ipcBufferSize = size;
+};
 
 Executer.prototype.execute = function(player, code /*string*/){
 	//var thiz = this;
 
 	var execCode = prefixCode1 +
-				player.getId() + '\', \'' + this.roomId + '\', ' + this.stepLimit +
+				player.getId() + '\', \'' + this.roomId + '\', ' + this.stepLimit + ', ' +
+				this.ipcFd + ', ' + this.ipcBufferSize +
 				prefixCode2 + code + suffixCode;
 	debugger;
 
