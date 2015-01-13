@@ -30,7 +30,7 @@ var playerTemplate = '<div class="player" id={{id}} style="background:{{color}}"
                         目前錢幣: \
                         <span class="money">0</span>\
                     </div>\
-                    <div>目前方向: <span class="direction">{{direction}}</span>\
+                    <div><span class="direction"></span>\
                     </div>\
                 </div>';
 
