@@ -188,6 +188,7 @@ var inGame = function () {
         for (var i = 0; i < nowStatus.length; i++) {
             if (nowStatus[i] == 0) {
                 nowStatus[i] = 1;
+                console.log(data);
                 document.querySelector('div.row[data-target="' + (i + 1) + '"]').innerHTML = Mustache.render(playerTemplate, data);
                 break;
             }
