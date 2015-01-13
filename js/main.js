@@ -1,5 +1,5 @@
 var game = new Game();
-
+var interval;
 var roomTemplate = '<div class="row">{{name}}</div>\
             <div class="row">\
                 <div class="two columns">\
@@ -148,8 +148,8 @@ var inGame = function () {
     loadScript("./js/toolbox.js");
     loadScript("./lib/codemirror/lib/codemirror.js");
 
-    loadScript("./lib/codemirror/addon/edit/closeBrackets.js");
-    loadScript("./lib/codemirror/addon/edit/matchBrackets.js");
+    loadScript("./lib/codemirror/addon/edit/closebrackets.js");
+    loadScript("./lib/codemirror/addon/edit/matchbrackets.js");
     loadScript("./lib/codemirror/mode/javascript.js");
     loadScript("./js/gameRoom.js");
     loadScript("./js/gameScript.js");
@@ -229,11 +229,16 @@ var inGame = function () {
         game.socket.timerStart(function () {
             document.querySelector(".coding-plain").disabled = false;
             document.getElementById("send").disabled = false;
+            document.getElementById("timeLeft").innerHTML = game.gameRoom.roominfo.timeLimit * 60;
+            interval = setInterval(function () {
+                document.querySelector("#timeLeft").innerHTML = (parseInt(document.getElementById("timeLeft").innerHTML) - 1).toString();
+            }, 1000);
         });
 
         game.socket.timerStop(function () {
             document.getElementById("send").disabled = true;
             document.querySelector(".coding-plain").disabled = true;
+            clearInterval(interval);
             game.socket.sendSubmit(game.self.id, document.querySelector(".coding-plain").value);
         });
         game.socket.action(function (data) {
@@ -247,7 +252,7 @@ var inGame = function () {
 
 
 var setMoney = function (id, newmoney) {
-    document.getElementById(id).querySelector("span.money").innerHTML = newmoney;
+    document.getElementById(id).querySelector("span.money").innerHTML = (parseInt(document.getElementById(id).querySelector("span.money")) + newmoney).toString();
 };
 
 
@@ -298,52 +303,52 @@ var actionHandler = function (data) {
                             recentPlayer.direction = game.gameRoom.map.ring[recentPlayer.pointer];
                             break;
                         case "next":
-                                console.log(recentPlayer);
-                            if (recentPlayer.direction == "directUp"){
-                                
+                            console.log(recentPlayer);
+                            if (recentPlayer.direction == "directUp") {
+
                                 game.gameRoom.map.moveUp(recentPlayer);
                                 recentPlayer.y -= 1;
                             }
-                            if (recentPlayer.direction == "directDown"){
-                                
+                            if (recentPlayer.direction == "directDown") {
+
                                 game.gameRoom.map.moveDown(recentPlayer);
                                 recentPlayer.y += 1;
                             }
-                            if (recentPlayer.direction == "directRight"){
-                                
+                            if (recentPlayer.direction == "directRight") {
+
                                 game.gameRoom.map.moveRight(recentPlayer);
-                                recentPlayer.x +=1;
+                                recentPlayer.x += 1;
                             }
-                            if (recentPlayer.direction == "directLeft"){
-                                
+                            if (recentPlayer.direction == "directLeft") {
+
                                 game.gameRoom.map.moveLeft(recentPlayer);
                                 recentPlayer.x -= 1;
                             }
-                            if (recentPlayer.direction == "directRightUp"){
-                                
+                            if (recentPlayer.direction == "directRightUp") {
+
                                 game.gameRoom.map.moveRightUp(recentPlayer);
                                 recentPlayer.x += 1;
                                 recentPlayer.y -= 1;
                             }
-                            if (recentPlayer.direction == "directRightDown"){
-                                
+                            if (recentPlayer.direction == "directRightDown") {
+
                                 game.gameRoom.map.moveRightDown(recentPlayer);
                                 recentPlayer.x += 1;
                                 recentPlayer.y += 1;
                             }
-                            if (recentPlayer.direction == "directLeftUp"){
-                                
+                            if (recentPlayer.direction == "directLeftUp") {
+
                                 game.gameRoom.map.moveLeftUp(recentPlayer);
                                 recentPlayer.x -= 1;
                                 recentPlayer.y -= 1;
                             }
-                            if (recentPlayer.direction == "directLeftDown"){
-                                
+                            if (recentPlayer.direction == "directLeftDown") {
+
                                 game.gameRoom.map.moveLeftDown(recentPlayer);
                                 recentPlayer.x -= 1;
                                 recentPlayer.y += 1;
                             }
-                                console.log(recentPlayer);
+                            console.log(recentPlayer);
                             break;
                         }
 

@@ -3,14 +3,12 @@ body#login-body {
   background: #c1e1c9;
 }
 body#login-body div.login {
-  margin: 0px auto;
-  margin-top: 40vh;
+  margin-top: 30vh;
   border-radius: 30px;
-  width: 300px;
-  height: 150px;
 }
 body#login-body button {
   color: white;
+  background: #438a31;
 }
 body#room-body {
   background: #c1e1c9;
@@ -20,24 +18,83 @@ body#room-body div.container {
 }
 body#room-body div.room {
   padding: 10px;
-  margin-top: 10px;
+  margin: 40px;
   background: #92d282;
   border-radius: 20px;
 }
 body#room-body div.room button {
-  background: #87C0F1;
+  background: #438a31;
   height: 3em;
 }
 body#room-body button {
   color: white;
 }
 body#room-body div.user-info {
+  background: #A5682A;
   margin: 10px;
   padding: 10px;
   color: white;
+  font-size: 1.2em;
+  line-height: 3em;
+}
+body#room-body div.user-info div.title {
+  font-weight: 700;
+  font-size: 1.5em;
+  color: black;
+  background: #e1b487;
 }
 body#room-body div.users {
+  background: #A5682A;
   margin: 10px;
   padding: 10px;
   color: white;
+  font-size: 1.2em;
+  line-height: 3em;
+}
+body#room-body div.users div.title {
+  font-weight: 700;
+  font-size: 1.5em;
+  color: black;
+  background: #e1b487;
+}
+body#game {
+  background: #c1e1c9;
+}
+body#game div.player-info div.player {
+  margin-top: 20px;
+  margin-left: auto;
+  margin-right: auto;
+  margin-bottom: 20px;
+  padding: 10px;
+  border: 2px;
+  border-radius: 20px;
+  height: 100px;
+  width: 80%;
+  font-size: 1.5em;
+}
+body#game div.game-main {
+  text-align: center;
+  margin-top: 100px;
+  margin-bottom: 100px;
+}
+body#game div.coding textarea {
+  resize: none;
+  margin-top: 10px;
+  width: 80%;
+  height: 70vh;
+  background: #55af3f;
+}
+body#game div.coding div.CodeMirror {
+  margin-top: 10px;
+  width: 80%;
+  height: 70vh;
+}
+body#game div.coding div.sendBtn {
+  margin: 10px;
+  width: 80%;
+  text-align: right;
+}
+body#game div.coding div.sendBtn button {
+  color: white;
+  background: #438a31;
 }
