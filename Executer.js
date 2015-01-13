@@ -49,8 +49,10 @@ Executer.prototype.execute = function(player, code /*string*/){
 
 	var script = this.sandBox.createScript(execCode);
 
-	script.on('exit', function(/*err, output*/){
+	script.on('exit', function(err/*, output*/){
 		console.log('Exit');
+
+		console.log('Error: ' + err);
 	});
 
 	script.on('timeout', function(){

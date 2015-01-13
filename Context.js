@@ -125,12 +125,17 @@ Context.prototype.recycleColor = function(color){
 //IPC Buffer utilities
 Context.prototype.readIPCBuffer = function(buffer){
 	var bufferStr = buffer.toString();
+	//debugger;
+	//var out = JSON.parse(bufferStr.replace(/[\n\u0000]/g, ''));
+	//console.log(out);
 	return JSON.parse(bufferStr.replace(/[\n\u0000]/g, ''));
 };
 Context.prototype.writeIPCBuffer = function(buffer, json){
 	var str = JSON.stringify(json);
+	console.log(str);
 
 	buffer.fill('\u0000');
 	buffer.write(str);
-	buffer.sync();
+	buffer.sync(mmap.SYNC | mmap.MS_INVALIDATE);
+	console.log(this.readIPCBuffer(buffer));
 };

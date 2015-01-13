@@ -1,20 +1,28 @@
 //var net = require('net');
 var ipc = require('node-ipc'),
-	mmap = require('mmap'),
-	context = new (require('./Context').Context)();
+	mmap = require('mmap');
 
 ipc.config.maxRetries = 0;
 ipc.config.silent = true;
 
 var isConnected = false;
 var serverId = null;
-var ipcBuffer;
+var ipcBuffer, ipcFd;
+var ipcBufferSize;
 
 var stepCount = 0;
 var STEP_MAX = 3;
 
+var readIPCBuffer = function(buffer){
+	var bufferStr = buffer.toString();
+	//debugger;
+	//var out = JSON.parse(bufferStr.replace(/[\n\u0000]/g, ''));
+	//console.log(out);
+	return JSON.parse(bufferStr.replace(/[\n\u0000]/g, ''));
+};
+
 exports.api = {
-	initGameIPC: function(player_id, server_id, stepLimit, ipcFd, ipcBufferSize){
+	initGameIPC: function(player_id, server_id, stepLimit, fd, bufferSize){
 		if(isConnected === true) return true;
 
 		ipc.config.id = player_id;
@@ -40,7 +48,9 @@ exports.api = {
 		//debugger;
 
 		//File map ipc
-		ipcBuffer = mmap.map(ipcBufferSize, mmap.PROT_READ, mmap.MAP_SHARED, ipcFd);
+		ipcFd = fd;
+		ipcBufferSize = bufferSize;
+		//ipcBuffer = mmap.map(ipcBufferSize, mmap.PROT_READ, mmap.MAP_SHARED, ipcFd);
 
 		return true;
 	},
@@ -53,7 +63,7 @@ exports.api = {
 	},
 
 	destroyIPC: function(){
-		if(ipcBuffer instanceof Buffer) ipcBuffer.unmap();
+		//if(ipcBuffer instanceof Buffer) ipcBuffer.unmap();
 	},
 
 	/*Public APIs*/
@@ -106,14 +116,14 @@ exports.api = {
 		});
 	},
 
-	/*TODO: Implement this function*/
-	getMyPosition: function(){
+	GetMyPosition: function(){
 		var myPosition = {
 				x: -1,
 				y: -1
 			};
 
-		var ipcJson = context.readIPCBuffer(ipcBuffer);
+		ipcBuffer = mmap.map(ipcBufferSize, mmap.PROT_READ, mmap.MAP_SHARED, ipcFd);
+		var ipcJson = readIPCBuffer(ipcBuffer);
 		if(ipc.config.id in ipcJson){
 			var playerInfo = ipcJson[ipc.config.id];
 			if('x' in playerInfo && 'y' in playerInfo){
@@ -121,19 +131,28 @@ exports.api = {
 				myPosition.y = playerInfo.y;
 			}
 		}
+		ipc.of[serverId].emit('msg.debug', {
+			id: ipc.config.id,
+			message: myPosition
+		});
 
 		return myPosition;
 	},
-	getMyDirection: function(){
+	GetMyDirection: function(){
 		var direction = 'directError';
 
-		var ipcJson = context.readIPCBuffer(ipcBuffer);
+		ipcBuffer = mmap.map(ipcBufferSize, mmap.PROT_READ, mmap.MAP_SHARED, ipcFd);
+		var ipcJson = readIPCBuffer(ipcBuffer);
 		if(ipc.config.id in ipcJson){
 			var playerInfo = ipcJson[ipc.config.id];
 			if('direct' in playerInfo){
 				direction = playerInfo['direct'];
 			}
 		}
+		ipc.of[serverId].emit('msg.debug', {
+			id: ipc.config.id,
+			message: direction
+		});
 
 		return direction.replace(/direct/g, '');
 	},

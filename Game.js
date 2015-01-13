@@ -11,7 +11,7 @@ exports.Game = Game;
 
 var context = new Context();
 
-var PLAYER_IPC_BUFFER_QUOTA = 32 * 2;
+var PLAYER_IPC_BUFFER_QUOTA = 32 * 20;
 
 function Game(ioMain, roomName, initData){
     this.name = roomName;
@@ -33,9 +33,9 @@ function Game(ioMain, roomName, initData){
 	this.codeStorage = {};
 
 	var ipcFilePath = context.IPC_FILE_PATH_PREFIX + '.' + this.id;
-	this.ipcFd = fs.openSync(ipcFilePath, 'w+');
+	this.ipcFd = fs.openSync(ipcFilePath, 'w+'); //init ipc buffer
+	fs.writeFileSync(ipcFilePath, '{}');
 	this.ipcBuffer = mmap.map(PLAYER_IPC_BUFFER_QUOTA, mmap.PROT_READ | mmap.PROT_WRITE, mmap.MAP_SHARED, this.ipcFd);
-	context.writeIPCBuffer(this.ipcBuffer, {}); //init ipc buffer
 	var executerData = {
 		timeOut: 20 * 1000, //timeout: 20 seconds
 		stepLimit: this.stepLimit,
@@ -43,6 +43,7 @@ function Game(ioMain, roomName, initData){
 	};
 
 	this.codeExecuter = new Executer(context, this.id, executerData);
+	this.codeExecuter.setIPCBufferSize(PLAYER_IPC_BUFFER_QUOTA);
 	this.executionBlocker = false;
 	this.currentOrderIndex = 0;
 	this.actionsBuffer = {};
@@ -71,7 +72,7 @@ Game.prototype.addPlayer = function(player){ //Add a new player into the room, r
 		});
 		this.players[player.getId()] = player;
 		this.playersOrder.push(player); //Default order
-		this.codeExecuter.setIPCBufferSize(this.playersOrder.length * PLAYER_IPC_BUFFER_QUOTA);
+		//this.codeExecuter.setIPCBufferSize(this.playersOrder.length * PLAYER_IPC_BUFFER_QUOTA);
 		player.setRoom(this);
 		player.setPlateSize(this.plateSize);
 
@@ -90,7 +91,8 @@ Game.prototype.addPlayer = function(player){ //Add a new player into the room, r
 		player.getIOInstance().broadcast.to(this.id).emit('playerAdd', {
 			id: player.getId(),
 			name: player.getName(),
-			color: player.getColor()
+			color: player.getColor(),
+			direction: player.getCurrentDirection()
 		});
 
 		addIORoute.call(this, player.getIOInstance());
@@ -121,6 +123,7 @@ Game.prototype.addPlayer = function(player){ //Add a new player into the room, r
 				};
 			}
 			context.writeIPCBuffer(this.ipcBuffer, ipcJson);
+			debugger;
 
 			thiz.ioMain.to(thiz.id).emit('gameStart', {
 				plate: plate,
@@ -487,6 +490,7 @@ var initCodeEngine = function(){
 			}
 		});
 
+		/*
 		ipc.server.on('msg.info', function(data, socket){
 			if('id' in data && 'message' in data){
 				var player;
@@ -514,6 +518,15 @@ var initCodeEngine = function(){
 							break;
 					}
 				}
+			}
+		});
+		*/
+		ipc.server.on('msg.debug', function(data/*, socket*/){
+			console.log('Message from sandbox: ');
+			if('id' in data && 'message' in data){
+				console.log('Player ' + data.id);
+				console.log('Message :');
+				console.log(data.message);
 			}
 		});
 
