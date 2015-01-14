@@ -25,8 +25,6 @@ var Executer = function(ctx, roomId, initData){
     this.roomId = roomId;
 	this.timeOutMs = ('timeOut' in initData)? parseInt(initData['timeOut']) : 60 * 1000;
 	this.stepLimit = ('stepLimit' in initData)? parseInt(initData['stepLimit']) : 5;
-	this.ipcFd = ('ipcFd' in initData)? parseInt(initData['ipcFd']) : -1;
-	this.ipcBufferSize = ('ipcBufferSize' in initData)? parseInt(initData['ipcBufferSize']) : 500;
 
 	this.sandBox = new SandBox({
 		api: './ExecuterAPIs.js',
@@ -34,16 +32,12 @@ var Executer = function(ctx, roomId, initData){
 		timeout: this.timeOutMs
 	});
 };
-Executer.prototype.setIPCBufferSize = function(size){
-	this.ipcBufferSize = size;
-};
 
 Executer.prototype.execute = function(player, code /*string*/){
 	//var thiz = this;
 
 	var execCode = prefixCode1 +
-				player.getId() + '\', \'' + this.roomId + '\', ' + this.stepLimit + ', ' +
-				this.ipcFd + ', ' + this.ipcBufferSize +
+				player.getId() + '\', \'' + this.roomId + '\', ' + this.stepLimit +
 				prefixCode2 + code + suffixCode;
 	debugger;
 

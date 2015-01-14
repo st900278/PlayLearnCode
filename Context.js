@@ -40,8 +40,6 @@ function Context(){
 
 	this.GAME_SOCKET_ID = 'conopoly_ipc_server';
 
-	this.IPC_FILE_PATH_PREFIX = '/tmp/conopoly_ipc_file';
-
 	this.HOT_COLORS = [
 		'#49ff45',
 		'#df004c',
@@ -49,7 +47,6 @@ function Context(){
 		'#48b427',
 		'#ff8100',
 		'#00933b',
-		'#3f3f3f',
 		'#ff40a7',
 		'#46aeff',
 		'#7a85ec',
@@ -120,22 +117,4 @@ Context.prototype.recycleColor = function(color){
 		this.colorSelectedMap[color] = false;
 		console.log('Color ' + color + ' recycled');
 	}
-};
-
-//IPC Buffer utilities
-Context.prototype.readIPCBuffer = function(buffer){
-	var bufferStr = buffer.toString();
-	//debugger;
-	//var out = JSON.parse(bufferStr.replace(/[\n\u0000]/g, ''));
-	//console.log(out);
-	return JSON.parse(bufferStr.replace(/[\n\u0000]/g, ''));
-};
-Context.prototype.writeIPCBuffer = function(buffer, json){
-	var str = JSON.stringify(json);
-	console.log(str);
-
-	buffer.fill('\u0000');
-	buffer.write(str);
-	buffer.sync(mmap.SYNC | mmap.MS_INVALIDATE);
-	console.log(this.readIPCBuffer(buffer));
 };

@@ -1,28 +1,18 @@
 //var net = require('net');
 var ipc = require('node-ipc'),
-	mmap = require('mmap');
+	uvRun = require('uvrun');
 
 ipc.config.maxRetries = 0;
 ipc.config.silent = true;
 
 var isConnected = false;
 var serverId = null;
-var ipcBuffer, ipcFd;
-var ipcBufferSize;
 
 var stepCount = 0;
 var STEP_MAX = 3;
 
-var readIPCBuffer = function(buffer){
-	var bufferStr = buffer.toString();
-	//debugger;
-	//var out = JSON.parse(bufferStr.replace(/[\n\u0000]/g, ''));
-	//console.log(out);
-	return JSON.parse(bufferStr.replace(/[\n\u0000]/g, ''));
-};
-
 exports.api = {
-	initGameIPC: function(player_id, server_id, stepLimit, fd, bufferSize){
+	initGameIPC: function(player_id, server_id, stepLimit){
 		if(isConnected === true) return true;
 
 		ipc.config.id = player_id;
@@ -46,11 +36,6 @@ exports.api = {
 			});
 		});
 		//debugger;
-
-		//File map ipc
-		ipcFd = fd;
-		ipcBufferSize = bufferSize;
-		//ipcBuffer = mmap.map(ipcBufferSize, mmap.PROT_READ, mmap.MAP_SHARED, ipcFd);
 
 		return true;
 	},
@@ -121,16 +106,26 @@ exports.api = {
 				x: -1,
 				y: -1
 			};
+		var result = false;
 
-		ipcBuffer = mmap.map(ipcBufferSize, mmap.PROT_READ, mmap.MAP_SHARED, ipcFd);
-		var ipcJson = readIPCBuffer(ipcBuffer);
-		if(ipc.config.id in ipcJson){
-			var playerInfo = ipcJson[ipc.config.id];
-			if('x' in playerInfo && 'y' in playerInfo){
-				myPosition.x = playerInfo.x;
-				myPosition.y = playerInfo.y;
+		ipc.of[serverId].on('msgAck.info', function(data){
+			if('player.position' in data){
+				var position = data['player.position'];
+
+				myPosition.x = position.x;
+				myPosition.y = position.y;
 			}
+			result = true;
+		});
+		ipc.of[serverId].emit('msg.info', {
+			id: ipc.config.id,
+			message: 'player.position'
+		});
+
+		while(result !== true){
+			uvRun.runOnce();
 		}
+
 		ipc.of[serverId].emit('msg.debug', {
 			id: ipc.config.id,
 			message: myPosition
@@ -140,15 +135,23 @@ exports.api = {
 	},
 	GetMyDirection: function(){
 		var direction = 'directError';
+		var result = false;
 
-		ipcBuffer = mmap.map(ipcBufferSize, mmap.PROT_READ, mmap.MAP_SHARED, ipcFd);
-		var ipcJson = readIPCBuffer(ipcBuffer);
-		if(ipc.config.id in ipcJson){
-			var playerInfo = ipcJson[ipc.config.id];
-			if('direct' in playerInfo){
-				direction = playerInfo['direct'];
+		ipc.of[serverId].on('msgAck.info', function(data){
+			if('player.direction' in data){
+				direction = data['player.direction'];
 			}
+			result = true;
+		});
+		ipc.of[serverId].emit('msg.info', {
+			id: ipc.config.id,
+			message: 'player.direction'
+		});
+
+		while(result !== true){
+			uvRun.runOnce();
 		}
+
 		ipc.of[serverId].emit('msg.debug', {
 			id: ipc.config.id,
 			message: direction
