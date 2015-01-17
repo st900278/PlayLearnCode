@@ -456,8 +456,8 @@ var initCodeEngine = function(){
 									pX = player.getPosition().x;
 									pY = player.getPosition().y;
 
-									ipc.server.emit(socket, 'msgAck.info', {
-										'player.position': {
+									ipc.server.emit(socket, 'msgAck.info.player.position', {
+										'message': {
 											x: pX,
 											y: pY
 										}
@@ -466,11 +466,59 @@ var initCodeEngine = function(){
 									break;
 
 								case 'direction':
-									ipc.server.emit(socket, 'msgAck.info', {
-										'player.direction': player.getCurrentDirection()
+									ipc.server.emit(socket, 'msgAck.info.player.direction', {
+										'message': player.getCurrentDirection()
 									});
 									break;
 							}
+							break;
+
+						case 'map':
+							var outData = {
+								width: thiz.plateSize,
+								height: thiz.plateSize,
+								map: []
+							};
+
+							var plate = thiz.gamePlate.getGamePlate().plate;
+							for(var i = 0; i < plate.length; i++){
+								var row = plate[i];
+								outData.map[i] = [];
+								for(var j = 0; j < row.length; j++){
+									switch(row[j]){
+										case context.Id.Plate.EMPTY:
+											outData.map[i][j] = {
+												object: 'empty'
+											};
+											break;
+
+										case context.Id.Plate.Money.LEVEL1:
+											outData.map[i][j] = {
+												object: 'money',
+												amount: 100
+											};
+											break;
+
+										case context.Id.Plate.Money.LEVEL2:
+											outData.map[i][j] = {
+												object: 'money',
+												amount: 500
+											};
+											break;
+
+										case context.Id.Plate.Money.LEVEL3:
+											outData.map[i][j] = {
+												object: 'money',
+												amount: 1000
+											};
+											break;
+									}
+								}
+							}
+
+							ipc.server.emit(socket, 'msgAck.info.map', {
+								'message': outData
+							});
 							break;
 					}
 				}

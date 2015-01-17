@@ -101,6 +101,7 @@ exports.api = {
 		});
 	},
 
+	/*Game info part*/
 	GetMyPosition: function(){
 		var myPosition = {
 				x: -1,
@@ -108,9 +109,9 @@ exports.api = {
 			};
 		var result = false;
 
-		ipc.of[serverId].on('msgAck.info', function(data){
-			if('player.position' in data){
-				var position = data['player.position'];
+		ipc.of[serverId].on('msgAck.info.player.position', function(data){
+			if('message' in data){
+				var position = data['message'];
 
 				myPosition.x = position.x;
 				myPosition.y = position.y;
@@ -137,9 +138,9 @@ exports.api = {
 		var direction = 'directError';
 		var result = false;
 
-		ipc.of[serverId].on('msgAck.info', function(data){
-			if('player.direction' in data){
-				direction = data['player.direction'];
+		ipc.of[serverId].on('msgAck.info.player.direction', function(data){
+			if('message' in data){
+				direction = data['message'];
 			}
 			result = true;
 		});
@@ -158,6 +159,27 @@ exports.api = {
 		});
 
 		return direction.replace(/direct/g, '');
+	},
+	GetMap: function(){
+		var map = {};
+		var result = false;
+
+		ipc.of[serverId].on('msgAck.info.map', function(data){
+			if('message' in data){
+				map = data['message'];
+			}
+			result = true;
+		});
+		ipc.of[serverId].emit('msg.info', {
+			id: ipc.config.id,
+			message: 'map'
+		});
+
+		while(result !== true){
+			uvRun.runOnce();
+		}
+
+		return map;
 	},
 
 	/*Tool part*/
