@@ -481,33 +481,34 @@ var initCodeEngine = function(){
 							};
 
 							var plate = thiz.gamePlate.getGamePlate().plate;
-							for(var i = 0; i < plate.length; i++){
+							var i;
+							for(i = 0; i < outData.width; i++) outData.map[i] = [];
+							for(i = 0; i < plate.length; i++){
 								var row = plate[i];
-								outData.map[i] = [];
 								for(var j = 0; j < row.length; j++){
 									switch(row[j]){
 										case context.Id.Plate.EMPTY:
-											outData.map[i][j] = {
+											outData.map[j][i] = {
 												object: 'empty'
 											};
 											break;
 
 										case context.Id.Plate.Money.LEVEL1:
-											outData.map[i][j] = {
+											outData.map[j][i] = {
 												object: 'money',
 												amount: 100
 											};
 											break;
 
 										case context.Id.Plate.Money.LEVEL2:
-											outData.map[i][j] = {
+											outData.map[j][i] = {
 												object: 'money',
 												amount: 500
 											};
 											break;
 
 										case context.Id.Plate.Money.LEVEL3:
-											outData.map[i][j] = {
+											outData.map[j][i] = {
 												object: 'money',
 												amount: 1000
 											};
