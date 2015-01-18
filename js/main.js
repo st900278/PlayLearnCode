@@ -1,5 +1,6 @@
 var game = new Game();
 var interval;
+
 var roomTemplate = '<div class="row">{{name}}</div>\
             <div class="row">\
                 <div class="two columns">\
@@ -22,17 +23,16 @@ var roomTemplate = '<div class="row">{{name}}</div>\
                 </div>\
         </div>';
 
-var userTemplate = '<div class="user-name" id={{id}}>暱稱:{{name}}</div>';
+var userTemplate = '<div class="user-name" id="{{id}}">暱稱:{{name}}</div>';
 
-var playerTemplate = '<div class="player" id={{id}} style="background:{{color}}">\
+var playerTemplate = '<div class="player" id="{{id}}" style="background:{{color}};">\
                     <div>玩家: {{name}}</div>\
                     <div>\
                         目前錢幣: \
                         <span class="money">0</span>\
                     </div>\
-                    <div><span class="direction"></span>\
-                    </div>\
-                </div>';
+                    <div>目前方向:<span class="direction">{{direction}}</span>\
+                    </div></div>';
 
 var loadPage = function (href) {
     var xmlhttp = new XMLHttpRequest();
@@ -164,7 +164,7 @@ var inGame = function () {
     document.querySelector('div.row[data-target="1"]').innerHTML = Mustache.render(playerTemplate, game.self);
     for (var i = 1; i < game.self.room.playerRequire; i++) {
         document.querySelector('div.row[data-target="' + (i + 1) + '"]').innerHTML = Mustache.render(playerTemplate, {
-            color: "#d3d3d3",
+            color: "#d3d3d3"
         });
         nowStatus.push(0);
     }
@@ -210,8 +210,7 @@ var inGame = function () {
             theme: "neo"
         });
 
-
-        for (var i = 0; i < game.gameRoom.roominfo.playerRequire; i++) event[i] = "";
+       // for (var i = 0; i < game.gameRoom.roominfo.playerRequire; i++) event[i] = "";
         var plate = data.plate;
         var ring = data.ring;
         var playerData = data.playerPositions;
@@ -222,6 +221,32 @@ var inGame = function () {
             for (var j = 0; j < game.nowPlayer.length; j++) {
                 if (playerData[i].id == game.nowPlayer[j].id) {
                     game.gameRoom.createPlayer(playerData[i].id, playerData[i].x, playerData[i].y, playerData[i].directRingPointer, game.nowPlayer[j].color, playerData[i].direction, i + 1);
+                    switch(playerData[i].direction){
+                            case "directUp":
+                                document.getElementById(playerData[i].id).querySelector("span.direction").innerHTML = "上";
+                                break;
+                            case "directDown":
+                                document.getElementById(playerData[i].id).querySelector("span.direction").innerHTML = "下";
+                                break;
+                            case "directLeft":
+                                document.getElementById(playerData[i].id).querySelector("span.direction").innerHTML = "左";
+                                break;
+                            case "directLeft":
+                                document.getElementById(playerData[i].id).querySelector("span.direction").innerHTML = "右";
+                                break;
+                            case "directRightUp":
+                                document.getElementById(playerData[i].id).querySelector("span.direction").innerHTML = "右上";
+                                break;
+                            case "directRightDown":
+                                document.getElementById(playerData[i].id).querySelector("span.direction").innerHTML = "右下";
+                                break;
+                            case "directLeftUp":
+                                document.getElementById(playerData[i].id).querySelector("span.direction").innerHTML = "左上";
+                                break;
+                            case "directLeftDown":
+                                document.getElementById(playerData[i].id).querySelector("span.direction").innerHTML = "左下";
+                                break;
+                        }
                 }
             }
         }
@@ -230,6 +255,7 @@ var inGame = function () {
             document.querySelector(".coding-plain").disabled = false;
             document.getElementById("send").disabled = false;
             document.getElementById("timeLeft").innerHTML = game.gameRoom.roominfo.timeLimit * 60;
+            document.getElementById("level").innerHTML = (parseInt(document.getElementById("level").innerHTML) +1 ).toString();
             interval = setInterval(function () {
                 document.querySelector("#timeLeft").innerHTML = (parseInt(document.getElementById("timeLeft").innerHTML) - 1).toString();
             }, 1000);
@@ -244,7 +270,15 @@ var inGame = function () {
         game.socket.action(function (data) {
             actionHandler(data);
         });
-        game.socket.gameOver();
+        game.socket.gameOver(function(data){
+            console.log(data);
+            var champion = "名次：";
+            for(var qq = 0; qq<data.playersRank.length;qq++){
+                champion += "<div>第" + (qq+1).toString() +"名:" + data.playersRank[qq].name + "</div>";
+            }
+            champion += " 感謝您! 若要再玩請重新整理頁面";
+            document.querySelector(".system-info").innerHTML = document.querySelector(".system-info").innerHTML + champion;
+        });
     });
 
 
@@ -252,7 +286,9 @@ var inGame = function () {
 
 
 var setMoney = function (id, newmoney) {
-    document.getElementById(id).querySelector("span.money").innerHTML = (parseInt(document.getElementById(id).querySelector("span.money")) + newmoney).toString();
+    console.log(newmoney);
+    console.log(parseInt(document.getElementById(id).querySelector("span.money").innerHTML) + newmoney);
+    document.getElementById(id).querySelector("span.money").innerHTML = (parseInt(document.getElementById(id).querySelector("span.money").innerHTML) + newmoney).toString();
 };
 
 
@@ -279,6 +315,7 @@ var actionHandler = function (data) {
             var recentPlayer = event1[j].player;
             var data = event1[j].data;
             console.log(data);
+        
             for (var i = 0; i < data.length; i++) {
                 var action = data[i].msg.split(".");
                 switch (action[0]) {
@@ -301,54 +338,79 @@ var actionHandler = function (data) {
                             break;
                         case "setArrow":
                             recentPlayer.direction = game.gameRoom.map.ring[recentPlayer.pointer];
+                            switch(recentPlayer.direction){
+                                case "directUp":
+                                    document.getElementById(recentPlayer.id).querySelector("span.direction").innerHTML = "上";
+                                    break;
+                                case "directDown":
+                                    document.getElementById(recentPlayer.id).querySelector("span.direction").innerHTML = "下";
+                                    break;
+                                case "directLeft":
+                                    document.getElementById(recentPlayer.id).querySelector("span.direction").innerHTML = "左";
+                                    break;
+                                case "directLeft":
+                                    document.getElementById(recentPlayer.id).querySelector("span.direction").innerHTML = "右";
+                                    break;
+                                case "directRightUp":
+                                    document.getElementById(recentPlayer.id).querySelector("span.direction").innerHTML = "右上";
+                                    break;
+                                case "directRightDown":
+                                    document.getElementById(recentPlayer.id).querySelector("span.direction").innerHTML = "右下";
+                                    break;
+                                case "directLeftUp":
+                                    document.getElementById(recentPlayer.id).querySelector("span.direction").innerHTML = "左上";
+                                    break;
+                                case "directLeftDown":
+                                    document.getElementById(recentPlayer.id).querySelector("span.direction").innerHTML = "左下";
+                                    break;
+                            }
                             break;
                         case "next":
                             console.log(recentPlayer);
                             if (recentPlayer.direction == "directUp") {
 
-                                game.gameRoom.map.moveUp(recentPlayer);
+                                game.gameRoom.map.moveUp(recentPlayer, game.gameRoom.getAllPlayer());
                                 recentPlayer.y -= 1;
                             }
                             if (recentPlayer.direction == "directDown") {
 
-                                game.gameRoom.map.moveDown(recentPlayer);
+                                game.gameRoom.map.moveDown(recentPlayer, game.gameRoom.getAllPlayer());
                                 recentPlayer.y += 1;
                             }
                             if (recentPlayer.direction == "directRight") {
 
-                                game.gameRoom.map.moveRight(recentPlayer);
+                                game.gameRoom.map.moveRight(recentPlayer, game.gameRoom.getAllPlayer());
                                 recentPlayer.x += 1;
                             }
                             if (recentPlayer.direction == "directLeft") {
 
-                                game.gameRoom.map.moveLeft(recentPlayer);
+                                game.gameRoom.map.moveLeft(recentPlayer, game.gameRoom.getAllPlayer());
                                 recentPlayer.x -= 1;
                             }
                             if (recentPlayer.direction == "directRightUp") {
 
-                                game.gameRoom.map.moveRightUp(recentPlayer);
+                                game.gameRoom.map.moveRightUp(recentPlayer, game.gameRoom.getAllPlayer());
                                 recentPlayer.x += 1;
                                 recentPlayer.y -= 1;
                             }
                             if (recentPlayer.direction == "directRightDown") {
 
-                                game.gameRoom.map.moveRightDown(recentPlayer);
+                                game.gameRoom.map.moveRightDown(recentPlayer, game.gameRoom.getAllPlayer());
                                 recentPlayer.x += 1;
                                 recentPlayer.y += 1;
                             }
                             if (recentPlayer.direction == "directLeftUp") {
 
-                                game.gameRoom.map.moveLeftUp(recentPlayer);
+                                game.gameRoom.map.moveLeftUp(recentPlayer, game.gameRoom.getAllPlayer());
                                 recentPlayer.x -= 1;
                                 recentPlayer.y -= 1;
                             }
                             if (recentPlayer.direction == "directLeftDown") {
 
-                                game.gameRoom.map.moveLeftDown(recentPlayer);
+                                game.gameRoom.map.moveLeftDown(recentPlayer, game.gameRoom.getAllPlayer());
                                 recentPlayer.x -= 1;
                                 recentPlayer.y += 1;
                             }
-                            console.log(recentPlayer);
                             break;
                         }
 

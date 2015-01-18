@@ -111,16 +111,6 @@ GameMap.prototype.init = function (map, ring, people) {
                 this.placeImage("../src/png/medium.png", this.map['map'][i][j]);
             else if (map[j][i] == "fiveToThousand")
                 this.placeImage("../src/png/large.png", this.map['map'][i][j]);
-            else if (map[j][i] == "toolSwapOrder")
-                this.placeImage("../src/png/treasure-blue.png", this.map['map'][i][j]);
-            else if (map[j][i] == "toolSwapPosition")
-                this.placeImage("../src/png/treasure-red.png", this.map['map'][i][j]);
-            else if (map[j][i] == "toolMoveRow")
-                this.placeImage("../src/png/treasure-yellow.png", this.map['map'][i][j]);
-            else if (map[j][i] == "toolMoveCol")
-                this.placeImage("../src/png/treasure-original.png", this.map['map'][i][j]);
-            else if (map[j][i] == "toolDirectRingRandom")
-                this.placeImage("../src/png/treasure-purple.png", this.map['map'][i][j]);
         }
     }
     for (var i = 0; i < this.map['arrow'].length; i++) {        
@@ -164,29 +154,9 @@ GameMap.prototype.drawMap = function () {
             ctx.strokeRect(i * 40, j * 40, 40, 40);
         }
     }
-    
-    for (var i = 0; i < 8; i++) {
-        for (var j = 0; j < 8; j++) {
-            if (this.plate[j][i] == "oneToThree")
-                this.placeImage("../src/png/small.png", this.map['map'][i][j]);
-            else if (this.plate[j][i] == "threeToFive")
-                this.placeImage("../src/png/medium.png", this.map['map'][i][j]);
-            else if (this.plate[j][i] == "fiveToThousand")
-                this.placeImage("../src/png/large.png", this.map['map'][i][j]);
-            else if (this.plate[j][i] == "toolSwapOrder")
-                this.placeImage("../src/png/treasure-blue.png", this.map['map'][i][j]);
-            else if (this.plate[j][i] == "toolSwapPosition")
-                this.placeImage("../src/png/treasure-red.png", this.map['map'][i][j]);
-            else if (this.plate[j][i] == "toolMoveRow")
-                this.placeImage("../src/png/treasure-yellow.png", this.map['map'][i][j]);
-            else if (this.plate[j][i] == "toolMoveCol")
-                this.placeImage("../src/png/treasure-original.png", this.map['map'][i][j]);
-            else if (this.plate[j][i] == "toolDirectRingRandom")
-                this.placeImage("../src/png/treasure-purple.png", this.map['map'][i][j]);
-        }
-    }
 
 };
+
 
 GameMap.prototype.placeImage = function (url, location) {
     var ctx = this.ctx;
@@ -206,6 +176,19 @@ GameMap.prototype.setPlayerLocation = function (player) {
     ctx.beginPath();
     ctx.arc(x, y, this.width * 0.4, 0, 2 * Math.PI);
     ctx.fill();
+};
+
+GameMap.prototype.redrawItem = function(){
+    for (var i = 0; i < 8; i++) {
+        for (var j = 0; j < 8; j++) {
+            if (this.plate[j][i] == "oneToThree")
+                this.placeImage("../src/png/small.png", this.map['map'][i][j]);
+            else if (this.plate[j][i] == "threeToFive")
+                this.placeImage("../src/png/medium.png", this.map['map'][i][j]);
+            else if (this.plate[j][i] == "fiveToThousand")
+                this.placeImage("../src/png/large.png", this.map['map'][i][j]);
+        }
+    }
 };
 
 GameMap.prototype.setPlayerRing = function(player){
@@ -228,17 +211,17 @@ GameMap.prototype.removePlayerRing = function(player){
 };
 
 
-GameMap.prototype.moveObject = function (player, location) {
+GameMap.prototype.moveObject = function (player, location, otherPlayer) {
     var ctx = this.ctx;
     var that = this;
     var tmp = {};
     tmp.x = player.x;
     tmp.y = player.y;
+    tmp.color = player.color;
     var vx = (location.x - tmp.x) / 100;
     var vy = (location.y - tmp.y) / 100;
     
     var count = 0;
- 
     var drawInterval = setInterval(function () {
         ctx.clearRect((tmp.x+2)*40+2, (tmp.y+2)*40+2, that.width-4, that.width-4);
         that.drawMap();
@@ -246,33 +229,38 @@ GameMap.prototype.moveObject = function (player, location) {
         tmp.x = tmp.x + vx;
         tmp.y = tmp.y + vy;
         count++;
+        that.redrawItem();
+        for(var i=0;i<otherPlayer.length;i++){
+            if(otherPlayer[i].id == player.id)continue;
+            that.setPlayerLocation(otherPlayer[i]);
+        }
         if (count == 100) {
             clearInterval(drawInterval);
         }
     }, 5);
     
 };
-GameMap.prototype.moveRight = function(player){
-    this.moveObject(player, {x:player.x+1, y:player.y}); 
+GameMap.prototype.moveRight = function(player, players){
+    this.moveObject(player, {x:player.x+1, y:player.y}, players); 
 };
-GameMap.prototype.moveLeft = function(player){
-    this.moveObject(player, {x:player.x-1, y:player.y}); 
+GameMap.prototype.moveLeft = function(player, players){
+    this.moveObject(player, {x:player.x-1, y:player.y}, players); 
 };
-GameMap.prototype.moveUp = function(player){
-    this.moveObject(player, {x:player.x, y:player.y-1}); 
+GameMap.prototype.moveUp = function(player, players){
+    this.moveObject(player, {x:player.x, y:player.y-1}, players); 
 };
-GameMap.prototype.moveDown = function(player){
-    this.moveObject(player, {x:player.x, y:player.y+1}); 
+GameMap.prototype.moveDown = function(player, players){
+    this.moveObject(player, {x:player.x, y:player.y+1}, players); 
 };
-GameMap.prototype.moveRightDown = function(player){
-    this.moveObject(player, {x:player.x+1, y:player.y+1}); 
+GameMap.prototype.moveRightDown = function(player, players){
+    this.moveObject(player, {x:player.x+1, y:player.y+1}, players); 
 };
-GameMap.prototype.moveLeftDown = function(player){
-    this.moveObject(player, {x:player.x-1, y:player.y+1}); 
+GameMap.prototype.moveLeftDown = function(player, players){
+    this.moveObject(player, {x:player.x-1, y:player.y+1}, players); 
 };
-GameMap.prototype.moveRightUp = function(player){
-    this.moveObject(player, {x:player.x+1, y:player.y-1}); 
+GameMap.prototype.moveRightUp = function(player, players){
+    this.moveObject(player, {x:player.x+1, y:player.y-1}, players); 
 };
-GameMap.prototype.moveLeftUp = function(player){
-    this.moveObject(player, {x:player.x-1, y:player.y-1}); 
+GameMap.prototype.moveLeftUp = function(player, players){
+    this.moveObject(player, {x:player.x-1, y:player.y-1}, players); 
 };

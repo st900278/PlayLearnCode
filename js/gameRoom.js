@@ -10,6 +10,7 @@ GameRoom.prototype.createPlayer = function(id, x, y, pointer, color, direction, 
     this.player.push(people);
     this.map.setPlayerLocation(people);
     this.map.setPlayerRing(people);
+    return people;
 };
 
     
@@ -19,4 +20,7 @@ GameRoom.prototype.getPlayer = function(id){
             return this.player[i];
         }
     }
+};
+GameRoom.prototype.getAllPlayer = function(){
+    return this.player;
 };
